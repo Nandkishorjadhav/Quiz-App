@@ -15,8 +15,14 @@ import type {
   SpecialQuizParticipant,
   Difficulty,
   Question,
-  User,
 } from '@/types';
+
+/** Minimal identity shape used by join() — works for both logged-in users and guests */
+export interface QuizJoinUser {
+  id: string;
+  name: string;
+  avatar?: string;
+}
 import { CATEGORIES } from '@/data/categories';
 import { MOCK_QUESTIONS } from '@/data/questions';
 import { storage, STORAGE_KEYS } from '@/utils/storage';
@@ -120,7 +126,7 @@ export const specialQuizService = {
       questionCount: number;
       timePerQuestion: number;
     },
-    admin: User,
+    admin: QuizJoinUser,
   ): SpecialQuiz {
     // Fetch questions for the category + difficulty
     const allQ = getAllStoredQuestions();
@@ -187,7 +193,7 @@ export const specialQuizService = {
    */
   join(
     id: string,
-    user: User,
+    user: QuizJoinUser,
   ): { status: 'not_found'; quiz?: undefined; already?: undefined }
     | { status: 'ended' | 'live' | 'joined' | 'already'; quiz: SpecialQuiz; already: boolean } {
     const quiz = this.getById(id);

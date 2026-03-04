@@ -133,7 +133,7 @@ export default function SpecialQuizManagePage() {
   };
 
   const copyLink = (id: string) => {
-    const link = `${window.location.origin}/join/${id}`;
+    const link = `${window.location.origin}/live/${id}`;
     navigator.clipboard.writeText(link).then(() => {
       setCopied(id);
       setTimeout(() => setCopied(null), 2000);
@@ -321,7 +321,34 @@ export default function SpecialQuizManagePage() {
                       </div>
                     </div>
 
-                    {/* Participant mini-table for live quizzes */}
+                    {/* Waiting-room: live join counter for "waiting" quizzes */}
+                    {quiz.status === 'waiting' && (
+                      <div className="border-t border-[var(--border)] px-4 sm:px-5 py-3 bg-amber-50/50 dark:bg-amber-900/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                            <Users size={12} className="animate-pulse" />
+                            Waiting Room
+                            <span className="bg-amber-200 dark:bg-amber-700 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 rounded-full text-xs font-bold ml-1">
+                              {quiz.participants.length} joined
+                            </span>
+                          </span>
+                          <span className="text-xs text-[var(--text-muted)]">updates every 3s</span>
+                        </div>
+                        {quiz.participants.length === 0 ? (
+                          <p className="text-xs text-[var(--text-muted)] italic">No students have joined yet — share the link!</p>
+                        ) : (
+                          <div className="flex flex-wrap gap-1.5">
+                            {quiz.participants.map((p) => (
+                              <span key={p.userId} className="text-xs bg-amber-100 dark:bg-amber-800/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-700 px-2 py-0.5 rounded-full font-medium">
+                                {p.userName}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Participant mini-table for live/ended quizzes */}
                     {quiz.status !== 'waiting' && quiz.participants.length > 0 && (
                       <div className="border-t border-[var(--border)] overflow-x-auto">
                         <table className="w-full text-xs">
