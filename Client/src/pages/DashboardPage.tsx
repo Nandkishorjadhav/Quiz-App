@@ -637,6 +637,95 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* ── About Section ──────────────────────────────────────────────────── */}
+      <motion.section
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="mt-4"
+      >
+        {/* Section header */}
+        <div className="text-center mb-8">
+          <span className="inline-block px-3 py-1 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 text-xs font-semibold mb-3">
+            About This Platform
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text)]">
+            What is QuizMaster Pro?
+          </h2>
+          <p className="text-[var(--text-muted)] mt-2 max-w-2xl mx-auto text-sm sm:text-base">
+            An interactive quiz platform designed to help students and developers sharpen their programming skills through practice exams, instant feedback, and progress tracking.
+          </p>
+        </div>
+
+        {/* Feature grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {[
+            {
+              icon: '📚',
+              title: '8 Categories',
+              description: 'JavaScript, Python, Java, C++, SQL, React, TypeScript, and DSA — all in one place.',
+              gradient: 'from-blue-500/10 to-cyan-500/5',
+              border: 'border-blue-200 dark:border-blue-800',
+            },
+            {
+              icon: '🎯',
+              title: 'Adaptive Difficulty',
+              description: 'Choose Easy, Medium, or Hard to match your current skill level and grow steadily.',
+              gradient: 'from-emerald-500/10 to-teal-500/5',
+              border: 'border-emerald-200 dark:border-emerald-800',
+            },
+            {
+              icon: '⏱️',
+              title: 'Timed Exams',
+              description: 'Set a custom time limit per question to simulate real exam pressure and improve speed.',
+              gradient: 'from-amber-500/10 to-orange-500/5',
+              border: 'border-amber-200 dark:border-amber-800',
+            },
+            {
+              icon: '🏆',
+              title: 'Leaderboard',
+              description: 'Compete with other users, track your rank, and see how you stack up globally.',
+              gradient: 'from-purple-500/10 to-pink-500/5',
+              border: 'border-purple-200 dark:border-purple-800',
+            },
+          ].map((feature) => (
+            <div
+              key={feature.title}
+              className={`glass rounded-2xl p-5 border ${feature.border} bg-gradient-to-br ${feature.gradient}`}
+            >
+              <span className="text-3xl mb-3 block">{feature.icon}</span>
+              <h3 className="font-bold text-[var(--text)] mb-1">{feature.title}</h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* How it works */}
+        <div className="glass rounded-2xl p-6 sm:p-8 border border-[var(--border)]">
+          <h3 className="text-lg font-bold text-[var(--text)] mb-6 text-center">How It Works</h3>
+          <div className="grid sm:grid-cols-4 gap-4">
+            {[
+              { step: '1', icon: '📂', title: 'Pick a Category', desc: 'Choose from 8 programming topics that match what you\'re studying.' },
+              { step: '2', icon: '🎚️', title: 'Set Difficulty', desc: 'Select Easy, Medium, or Hard to get questions suited to your level.' },
+              { step: '3', icon: '⚙️', title: 'Configure Quiz', desc: 'Adjust question count, timer, shuffle, and negative marking options.' },
+              { step: '4', icon: '✅', title: 'Review Results', desc: 'See your score, correct answers, explanations, and detailed feedback.' },
+            ].map((item, i, arr) => (
+              <div key={item.step} className="flex flex-col items-center text-center relative">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-extrabold text-lg shadow-lg shadow-primary-500/20 mb-3">
+                  {item.step}
+                </div>
+                <span className="text-2xl mb-2">{item.icon}</span>
+                <p className="font-semibold text-[var(--text)] text-sm mb-1">{item.title}</p>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">{item.desc}</p>
+                {i < arr.length - 1 && (
+                  <div className="hidden sm:block absolute top-6 left-[calc(100%-8px)] w-4 h-0.5 bg-gradient-to-r from-primary-300 to-transparent" />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.section>
     </div>
   );
 }
