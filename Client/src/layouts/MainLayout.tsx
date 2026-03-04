@@ -19,7 +19,7 @@ export default function MainLayout({ children }: { children?: ReactNode }) {
       </main>
 
       <footer className="border-t border-[var(--border)] py-4 text-center text-xs text-[var(--text-muted)]">
-        QuizMaster Pro &copy; {new Date().getFullYear()} — Built with React + TypeScript
+        QuizMaster Pro &copy; {new Date().getFullYear()} — Made by Nandkishor Jadhav (2023BCS093)
       </footer>
     </div>
   );

@@ -27,7 +27,7 @@ export const signupSchema = z
 // ─── Admin Question Schema ────────────────────────────────────────────────────
 
 export const questionSchema = z.object({
-  category: z.enum(['java', 'python', 'cpp', 'javascript', 'sql']),
+  category: z.enum(['java', 'python', 'cpp', 'javascript', 'sql', 'react', 'typescript', 'dsa']),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   text: z.string().min(10, 'Question must be at least 10 characters').max(500),
   optionA: z.string().min(1, 'Option A is required').max(200),

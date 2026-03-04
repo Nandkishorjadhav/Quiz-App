@@ -3,6 +3,7 @@ import jsLogo from '@/assets/js.webp';
 import pythonLogo from '@/assets/python-brands-solid-full.svg';
 import javaLogo from '@/assets/java-brands-solid-full.svg';
 import cppLogo from '@/assets/C++.webp';
+import reactLogo from '@/assets/react-brands-solid-full.svg';
 
 export const CATEGORIES: CategoryMeta[] = [
   {
@@ -49,4 +50,30 @@ export const CATEGORIES: CategoryMeta[] = [
     gradient: 'from-teal-500 to-emerald-600',
     description: 'Joins, aggregations, indexes, transactions',
   },
+  {
+    id: 'react',
+    label: 'React',
+    icon: '⚛️',
+    image: reactLogo,
+    color: '#61DAFB',
+    gradient: 'from-cyan-400 to-blue-500',
+    description: 'Hooks, state, context, performance patterns',
+  },
+  {
+    id: 'typescript',
+    label: 'TypeScript',
+    icon: '📘',
+    color: '#3178C6',
+    gradient: 'from-blue-500 to-blue-700',
+    description: 'Types, generics, utility types, decorators',
+  },
+  {
+    id: 'dsa',
+    label: 'DSA',
+    icon: '🧩',
+    color: '#7C3AED',
+    gradient: 'from-violet-500 to-purple-700',
+    description: 'Arrays, trees, graphs, sorting, Big-O',
+  },
 ];
+

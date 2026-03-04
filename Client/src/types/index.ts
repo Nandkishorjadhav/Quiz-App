@@ -32,7 +32,7 @@ export interface SignupCredentials {
 
 // ─── Quiz Domain ──────────────────────────────────────────────────────────────
 
-export type Category = 'java' | 'python' | 'cpp' | 'javascript' | 'sql';
+export type Category = 'java' | 'python' | 'cpp' | 'javascript' | 'sql' | 'react' | 'typescript' | 'dsa';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface CategoryMeta {
