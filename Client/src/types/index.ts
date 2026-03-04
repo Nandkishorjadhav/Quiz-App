@@ -136,6 +136,56 @@ export interface LeaderboardEntry {
   completedAt: string;
 }
 
+// ─── Custom Category (admin-created) ─────────────────────────────────────────
+
+export interface CustomCategoryMeta {
+  id: string;           // e.g. "custom-rust", "custom-go"
+  label: string;
+  icon: string;         // emoji
+  color: string;        // hex for accent
+  gradient: string;     // tailwind gradient classes
+  description: string;
+  createdBy: string;    // admin userId
+  createdAt: string;    // ISO timestamp
+}
+
+// ─── Special Quiz (live exam created by admin) ────────────────────────────────
+
+export type SpecialQuizStatus = 'waiting' | 'live' | 'ended';
+
+export interface SpecialQuizParticipant {
+  userId: string;
+  userName: string;
+  avatar?: string;
+  joinedAt: number;
+  completedAt?: number;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  correctCount: number;
+  incorrectCount: number;
+  timeTaken: number;         // seconds
+  answers: Record<string, string>; // questionId → selectedOptionId
+  submitted: boolean;
+}
+
+export interface SpecialQuiz {
+  id: string;               // also serves as join code (e.g. "QUIZ-A3F9")
+  title: string;
+  description?: string;
+  category: string;         // can be built-in or custom category id
+  difficulty: Difficulty;
+  questions: Question[];
+  timePerQuestion: number;
+  status: SpecialQuizStatus;
+  createdBy: string;        // admin userId
+  createdByName: string;
+  createdAt: number;
+  startedAt?: number;
+  endedAt?: number;
+  participants: SpecialQuizParticipant[];
+}
+
 // ─── Admin ────────────────────────────────────────────────────────────────────
 
 export interface QuestionFormData {

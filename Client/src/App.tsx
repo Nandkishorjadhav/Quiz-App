@@ -13,6 +13,10 @@ const QuizPage = lazy(() => import('@/pages/QuizPage'));
 const ResultPage = lazy(() => import('@/pages/ResultPage'));
 const LeaderboardPage = lazy(() => import('@/pages/LeaderboardPage'));
 const AdminPage = lazy(() => import('@/pages/AdminPage'));
+const SpecialQuizManagePage = lazy(() => import('@/pages/SpecialQuizManagePage'));
+const JoinQuizPage = lazy(() => import('@/pages/JoinQuizPage'));
+const LiveQuizRoomPage = lazy(() => import('@/pages/LiveQuizRoomPage'));
+const LiveResultsPage = lazy(() => import('@/pages/LiveResultsPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export default function App() {
@@ -88,6 +92,64 @@ export default function App() {
             <ProtectedRoute requiredRole="admin">
               <MainLayout>
                 <AdminPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Special Quizzes — admin only */}
+        <Route
+          path="/special-quizzes"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <MainLayout>
+                <SpecialQuizManagePage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Join a live quiz (any authenticated user) */}
+        <Route
+          path="/join"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <JoinQuizPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/join/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <JoinQuizPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Live quiz room */}
+        <Route
+          path="/live-quiz/:id"
+          element={
+            <ProtectedRoute>
+              <QuizLayout>
+                <LiveQuizRoomPage />
+              </QuizLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Live quiz results */}
+        <Route
+          path="/live-results/:id"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <LiveResultsPage />
               </MainLayout>
             </ProtectedRoute>
           }

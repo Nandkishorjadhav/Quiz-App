@@ -27,7 +27,7 @@ export const signupSchema = z
 // ─── Admin Question Schema ────────────────────────────────────────────────────
 
 export const questionSchema = z.object({
-  category: z.enum(['java', 'python', 'cpp', 'javascript', 'sql', 'react', 'typescript', 'dsa']),
+  category: z.string().min(1, 'Category is required'),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   text: z.string().min(10, 'Question must be at least 10 characters').max(500),
   optionA: z.string().min(1, 'Option A is required').max(200),
@@ -40,6 +40,25 @@ export const questionSchema = z.object({
   tags: z.string().optional(),
 });
 
+export const customCategorySchema = z.object({
+  label: z.string().min(2, 'Name must be at least 2 characters').max(40),
+  icon: z.string().min(1, 'Pick an emoji icon').max(4),
+  description: z.string().min(10, 'Description too short').max(120),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color e.g. #3B82F6'),
+  gradient: z.string().min(1, 'Gradient is required'),
+});
+
+export const specialQuizSchema = z.object({
+  title: z.string().min(3, 'Title must be at least 3 characters').max(80),
+  description: z.string().max(200).optional(),
+  category: z.string().min(1, 'Category is required'),
+  difficulty: z.enum(['easy', 'medium', 'hard']),
+  questionCount: z.coerce.number().min(2).max(30),
+  timePerQuestion: z.coerce.number().min(10).max(120),
+});
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
 export type SignupFormValues = z.infer<typeof signupSchema>;
 export type QuestionFormValues = z.infer<typeof questionSchema>;
+export type CustomCategoryFormValues = z.infer<typeof customCategorySchema>;
+export type SpecialQuizFormValues = z.infer<typeof specialQuizSchema>;

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +16,7 @@ import {
   HelpCircle,
   Layers,
   ChevronDown,
+  Radio,
 } from 'lucide-react';
 import type { Category, Difficulty, Question } from '@/types';
 import { quizService } from '@/services/quizService';
@@ -68,6 +70,7 @@ const DIFF_META: Record<Difficulty, { label: string; color: string; bg: string; 
 export default function AdminPage() {
   useDocumentTitle('Admin Panel');
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
@@ -171,7 +174,7 @@ export default function AdminPage() {
     setIsSaving(true);
     try {
       const payload = {
-        category: data.category,
+        category: data.category as import('@/types').Category,
         difficulty: data.difficulty,
         text: data.text,
         options: [
@@ -236,6 +239,14 @@ export default function AdminPage() {
         </div>
         <Button variant="primary" leftIcon={<Plus size={16} />} onClick={() => openCreate()}>
           Add Question
+        </Button>
+        <Button
+          variant="outline"
+          leftIcon={<Radio size={16} />}
+          onClick={() => navigate('/special-quizzes')}
+          className="border-violet-400 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20"
+        >
+          Special Quizzes
         </Button>
       </motion.div>
 

@@ -36,4 +36,6 @@ export const STORAGE_KEYS = {
   LEADERBOARD: 'qm_leaderboard',
   CUSTOM_QUESTIONS: 'qm_custom_questions',
   SOUND_ENABLED: 'qm_sound',
+  CUSTOM_CATEGORIES: 'qm_custom_categories',
+  SPECIAL_QUIZZES: 'qm_special_quizzes',
 } as const;

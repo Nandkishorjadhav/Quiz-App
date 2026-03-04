@@ -1,19 +1,4 @@
-/**
- * authService.ts
- *
- * Mock Authentication Service
- * ─────────────────────────────────────────────────────────────────────────────
- * All functions mirror a real REST API contract:
- *   POST /api/auth/login
- *   POST /api/auth/signup
- *   POST /api/auth/logout
- *   GET  /api/auth/me
- *
- * To integrate a real backend, replace the mock logic with:
- *   import axios from 'axios';
- *   const BASE = import.meta.env.VITE_API_URL;
- *   return axios.post(`${BASE}/api/auth/login`, credentials).then(r => r.data);
- */
+
 
 import type { ApiResponse, LoginCredentials, SignupCredentials, User } from '@/types';
 import { storage, STORAGE_KEYS } from '@/utils/storage';
@@ -33,7 +18,7 @@ function seedDemoAccounts(): void {
   const demo: User[] = [
     {
       id: 'user-demo-student',
-      name: 'Alex Student',
+      name: 'Nandu Student',
       email: 'student@demo.com',
       role: 'student',
       createdAt: new Date().toISOString(),
