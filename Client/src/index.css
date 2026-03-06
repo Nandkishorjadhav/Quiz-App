@@ -103,3 +103,25 @@ body {
 /* ─── Utility ─────────────────────────────────────────────────────────────── */
 .no-select { user-select: none; -webkit-user-select: none; }
 .progress-bar-fill { transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ─── Hero gradient text ──────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, oklch(0.57 0.22 265), oklch(0.63 0.24 330));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Floating animation ──────────────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+.animate-float { animation: float 3s ease-in-out infinite; }
+
+/* ─── Soft fade-in up (for landing sections) ─────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.5s ease forwards; }
