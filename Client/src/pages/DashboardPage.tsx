@@ -4,9 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
   Clock,
-  BarChart3,
   BookOpen,
-  Settings2,
   ChevronRight,
   ChevronLeft,
   Check,
