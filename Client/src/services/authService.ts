@@ -10,10 +10,26 @@ function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
-// Seed a demo admin + student account if none exist
+// Seed a demo admin + student account if none exist, and migrate stale names
 function seedDemoAccounts(): void {
   const existing = storage.get<User[]>('qm_all_users') ?? [];
-  if (existing.length > 0) return;
+
+  // Migrate: if demo student still has old name, update it
+  if (existing.length > 0) {
+    const migrated = existing.map((u) =>
+      u.id === 'user-demo-student' && (u.name === 'Alex Student' || u.name === 'Alex')
+        ? { ...u, name: 'Nandu Student' }
+        : u
+    );
+    storage.set('qm_all_users', migrated);
+
+    // Also update the currently logged-in user if it's the stale demo account
+    const loggedIn = storage.get<User>(STORAGE_KEYS.AUTH_USER);
+    if (loggedIn?.id === 'user-demo-student' && (loggedIn.name === 'Alex Student' || loggedIn.name === 'Alex')) {
+      storage.set(STORAGE_KEYS.AUTH_USER, { ...loggedIn, name: 'Nandu Student' });
+    }
+    return;
+  }
 
   const demo: User[] = [
     {
