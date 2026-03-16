@@ -193,3 +193,111 @@ export async function deleteAccount(req, res, next) {
     next(error);
   }
 }
+
+/**
+ * Get current user's quiz results only
+ * @route GET /api/users/quiz-results
+ * @middleware authenticate
+ */
+export async function getUserQuizResults(req, res, next) {
+  try {
+    // Get only this user's quiz results
+    const results = await userModel.getUserQuizResults(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Quiz results retrieved successfully',
+      data: results,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Save quiz result for current user only
+ * @route POST /api/users/quiz-results
+ * @middleware authenticate
+ * @body {category, difficulty, score, totalQuestions, correctAnswers, timeSpent}
+ */
+export async function saveQuizResult(req, res, next) {
+  try {
+    const { category, difficulty, score, totalQuestions, correctAnswers, timeSpent } = req.body;
+
+    // Validate required fields
+    if (!category || !difficulty || score === undefined || !totalQuestions || correctAnswers === undefined || !timeSpent) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: category, difficulty, score, totalQuestions, correctAnswers, timeSpent',
+      });
+    }
+
+    // Save quiz result with current user's ID (enforced)
+    const result = await userModel.saveQuizResult({
+      userId: req.user.id, // Only save for current user
+      category,
+      difficulty,
+      score: parseFloat(score),
+      totalQuestions: parseInt(totalQuestions),
+      correctAnswers: parseInt(correctAnswers),
+      timeSpent: parseInt(timeSpent),
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Quiz result saved successfully',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get current user's quiz statistics
+ * @route GET /api/users/quiz-stats
+ * @middleware authenticate
+ */
+export async function getUserQuizStats(req, res, next) {
+  try {
+    // Get statistics for only this user
+    const stats = await userModel.getUserQuizStats(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: 'Quiz statistics retrieved successfully',
+      data: stats,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * Get global leaderboard - only users with quiz attempts
+ * @route GET /api/users/leaderboard
+ * @query category - Optional category filter
+ * @query difficulty - Optional difficulty filter
+ * @query limit - Optional limit (default 50)
+ * @public - No authentication required
+ */
+export async function getLeaderboard(req, res, next) {
+  try {
+    const { category, difficulty, limit = 50 } = req.query;
+
+    // Get leaderboard with optional filters
+    const leaderboard = await userModel.getLeaderboard({
+      category: category || null,
+      difficulty: difficulty || null,
+      limit: Math.min(parseInt(limit) || 50, 100), // Max 100 to prevent abuse
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Leaderboard retrieved successfully',
+      data: leaderboard,
+    });
+  } catch (error) {
+    next(error);
+  }
+}

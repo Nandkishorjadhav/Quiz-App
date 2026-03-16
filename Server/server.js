@@ -10,7 +10,6 @@ import userRoutes from './routes/users.js';
 
 const app = express();
 
-// ─── Middleware ────────────────────────────────────────────────────────────
 
 // CORS configuration
 app.use(
@@ -26,7 +25,6 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// ─── Health Check Route ────────────────────────────────────────────────────
 
 app.get('/health', (req, res) => {
   res.status(200).json({
@@ -36,12 +34,9 @@ app.get('/health', (req, res) => {
   });
 });
 
-// ─── API Routes ────────────────────────────────────────────────────────────
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-
-// ─── 404 Handler ─────────────────────────────────────────────────────────
 
 app.use((req, res) => {
   res.status(404).json({
@@ -50,11 +45,8 @@ app.use((req, res) => {
   });
 });
 
-// ─── Error Handler ──────────────────────────────────────────────────────
-
 app.use(errorHandler);
 
-// ─── Server Initialization ──────────────────────────────────────────────
 
 const PORT = config.PORT;
 
@@ -65,22 +57,7 @@ async function startServer() {
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`
-╔═════════════════════════════════════════════════════════╗
-║                                                         ║
-║      🎓 Quiz App Backend Server                        ║
-║      ✓ Server running on port ${PORT}                  ║
-║      ✓ Database initialized                             ║
-║      ✓ Environment: ${config.NODE_ENV}                 ║
-║                                                         ║
-║      📚 API Documentation:                              ║
-║      POST   /api/auth/login                            ║
-║      POST   /api/auth/signup                           ║
-║      GET    /api/users/profile                         ║
-║      GET    /api/health                                ║
-║                                                         ║
-╚═════════════════════════════════════════════════════════╝
-      `);
+      console.log(``);
     });
   } catch (error) {
     console.error('Failed to start server:', error);

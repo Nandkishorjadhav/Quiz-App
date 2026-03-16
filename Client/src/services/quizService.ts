@@ -151,20 +151,8 @@ export const quizService = {
     const results = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
     storage.set(STORAGE_KEYS.QUIZ_RESULTS, [...results, result]);
 
-    // Also update leaderboard
-    const entry: LeaderboardEntry = {
-      id: generateId(),
-      userId: result.userId,
-      userName: 'You',
-      category: result.config.category,
-      difficulty: result.config.difficulty,
-      score: result.totalScore,
-      percentage: result.percentage,
-      timeTaken: result.timeTaken,
-      completedAt: result.completedAt,
-    };
-    const lb = storage.get<LeaderboardEntry[]>(STORAGE_KEYS.LEADERBOARD) ?? [];
-    storage.set(STORAGE_KEYS.LEADERBOARD, [...lb, entry]);
+    // Note: Leaderboard is now fetched from backend API
+    // Do not add to localStorage leaderboard anymore
 
     return { data: result, message: 'Result saved', success: true };
   },
@@ -180,12 +168,44 @@ export const quizService = {
   },
 
   async getLeaderboard(category?: Category): Promise<ApiResponse<LeaderboardEntry[]>> {
-    await delay(FAKE_DELAY);
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      
+      // Build query string
+      const params = new URLSearchParams();
+      if (category) {
+        params.append('category', category);
+      }
+      params.append('limit', '50');
 
-    let lb = storage.get<LeaderboardEntry[]>(STORAGE_KEYS.LEADERBOARD) ?? [];
-    if (category) lb = lb.filter((e) => e.category === category);
-    lb = lb.sort((a, b) => b.score - a.score).slice(0, 50);
+      const response = await fetch(
+        `${API_BASE_URL}/api/users/leaderboard?${params.toString()}`
+      );
 
-    return { data: lb, message: 'OK', success: true };
+      if (!response.ok) {
+        throw new Error(`HTTP Error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Format backend response to match frontend format
+      const formatted: LeaderboardEntry[] = data.data.map((entry: any) => ({
+        id: entry.userId.toString(),
+        userId: entry.userId,
+        userName: entry.userName,
+        category: entry.category,
+        difficulty: entry.difficulty,
+        score: entry.score,
+        percentage: entry.percentage,
+        timeTaken: entry.totalTimeSpent || 0,
+        completedAt: entry.lastAttemptedAt || new Date().toISOString(),
+      }));
+
+      return { data: formatted, message: 'OK', success: true };
+    } catch (error) {
+      console.error('Failed to fetch leaderboard:', error);
+      // Fallback to empty leaderboard on error
+      return { data: [], message: 'Failed to fetch leaderboard', success: false };
+    }
   },
 };

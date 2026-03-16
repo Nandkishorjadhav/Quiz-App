@@ -189,4 +189,62 @@ export const authService = {
       throw new Error(error instanceof Error ? error.message : 'Failed to update profile');
     }
   },
+
+  /**
+   * Get user's quiz results (only their own)
+   */
+  async getQuizResults(): Promise<ApiResponse<any[]>> {
+    try {
+      const response = await apiRequest<any>('/api/users/quiz-results', {
+        method: 'GET',
+      });
+
+      return {
+        data: response.data || [],
+        message: response.message,
+        success: response.success,
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch quiz results');
+    }
+  },
+
+  /**
+   * Save quiz result for current user
+   */
+  async saveQuizResult(quizData: any): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiRequest<any>('/api/users/quiz-results', {
+        method: 'POST',
+        body: JSON.stringify(quizData),
+      });
+
+      return {
+        data: response.data,
+        message: response.message,
+        success: response.success,
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to save quiz result');
+    }
+  },
+
+  /**
+   * Get user's quiz statistics (only their own)
+   */
+  async getQuizStats(): Promise<ApiResponse<any>> {
+    try {
+      const response = await apiRequest<any>('/api/users/quiz-stats', {
+        method: 'GET',
+      });
+
+      return {
+        data: response.data,
+        message: response.message,
+        success: response.success,
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch quiz stats');
+    }
+  },
 };

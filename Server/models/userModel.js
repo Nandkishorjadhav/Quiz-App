@@ -132,3 +132,165 @@ export async function deleteUser(userId) {
   await db().run(`DELETE FROM users WHERE id = ?`, [userId]);
   return true;
 }
+
+/**
+ * Get user's quiz results (only this user's)
+ * @param {number} userId - User ID
+ * @returns {Promise<array>} Array of quiz results
+ */
+export async function getUserQuizResults(userId) {
+  return await db().all(
+    `SELECT * FROM quiz_results WHERE userId = ? ORDER BY attemptedAt DESC`,
+    [userId]
+  );
+}
+
+/**
+ * Save quiz result (only for specific user)
+ * @param {object} resultData - Quiz result data with userId
+ * @returns {Promise<object>} Saved result
+ */
+export async function saveQuizResult(resultData) {
+  const { userId, category, difficulty, score, totalQuestions, correctAnswers, timeSpent } = resultData;
+
+  const result = await db().run(
+    `INSERT INTO quiz_results (userId, category, difficulty, score, totalQuestions, correctAnswers, timeSpent)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [userId, category, difficulty, score, totalQuestions, correctAnswers, timeSpent]
+  );
+
+  return {
+    id: result.lastID,
+    userId,
+    category,
+    difficulty,
+    score,
+    totalQuestions,
+    correctAnswers,
+    timeSpent,
+    attemptedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Get user's quiz statistics (only this user)
+ * @param {number} userId - User ID
+ * @returns {Promise<object>} Quiz statistics
+ */
+export async function getUserQuizStats(userId) {
+  const results = await db().all(
+    `SELECT * FROM quiz_results WHERE userId = ?`,
+    [userId]
+  );
+
+  if (results.length === 0) {
+    return {
+      totalAttempts: 0,
+      totalCompleted: 0,
+      averageScore: 0,
+      highestScore: 0,
+      totalTimeSpent: 0,
+      categoryStats: {},
+    };
+  }
+
+  const totalAttempts = results.length;
+  const totalTimeSpent = results.reduce((sum, r) => sum + r.timeSpent, 0);
+  const scores = results.map(r => r.score);
+  const averageScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+  const highestScore = Math.max(...scores);
+
+  // Group by category
+  const categoryStats = {};
+  results.forEach(result => {
+    if (!categoryStats[result.category]) {
+      categoryStats[result.category] = {
+        attempts: 0,
+        avgScore: 0,
+        highScore: 0,
+      };
+    }
+    categoryStats[result.category].attempts += 1;
+    categoryStats[result.category].avgScore = 
+      (categoryStats[result.category].avgScore * (categoryStats[result.category].attempts - 1) + result.score) / 
+      categoryStats[result.category].attempts;
+    categoryStats[result.category].highScore = Math.max(categoryStats[result.category].highScore, result.score);
+  });
+
+  return {
+    totalAttempts,
+    totalCompleted: totalAttempts,
+    averageScore: parseFloat(averageScore.toFixed(2)),
+    highestScore,
+    totalTimeSpent,
+    categoryStats,
+  };
+}
+
+/**
+ * Get global leaderboard - only users with quiz attempts
+ * @param {object} options - Filter options {category, difficulty, limit}
+ * @returns {Promise<array>} Ranked leaderboard entries
+ */
+export async function getLeaderboard(options = {}) {
+  const { category = null, difficulty = null, limit = 50 } = options;
+
+  let query = `
+    SELECT 
+      u.id as userId,
+      u.uuid,
+      u.name as userName,
+      qr.category,
+      qr.difficulty,
+      COUNT(*) as attempts,
+      AVG(qr.score) as averageScore,
+      MAX(qr.score) as highestScore,
+      SUM(qr.timeSpent) as totalTimeSpent,
+      MAX(qr.attemptedAt) as lastAttemptedAt
+    FROM users u
+    INNER JOIN quiz_results qr ON u.id = qr.userId
+    WHERE 1=1
+  `;
+
+  const params = [];
+
+  // Add category filter if provided
+  if (category) {
+    query += ` AND qr.category = ?`;
+    params.push(category);
+  }
+
+  // Add difficulty filter if provided
+  if (difficulty) {
+    query += ` AND qr.difficulty = ?`;
+    params.push(difficulty);
+  }
+
+  query += `
+    GROUP BY u.id, u.uuid, u.name, qr.category, qr.difficulty
+    ORDER BY averageScore DESC, attempts DESC
+    LIMIT ?
+  `;
+  params.push(limit);
+
+  const results = await db().all(query, params);
+
+  // Format results with rank
+  const leaderboard = results.map((entry, index) => ({
+    id: entry.userId,
+    userId: entry.userId,
+    uuid: entry.uuid,
+    userName: entry.userName,
+    rank: index + 1,
+    category: entry.category,
+    difficulty: entry.difficulty,
+    score: Math.round(entry.averageScore),
+    percentage: Math.round((entry.averageScore / 100) * 100),
+    attempts: entry.attempts,
+    highestScore: entry.highestScore,
+    totalTimeSpent: entry.totalTimeSpent,
+    lastAttemptedAt: entry.lastAttemptedAt,
+  }));
+
+  return leaderboard;
+}

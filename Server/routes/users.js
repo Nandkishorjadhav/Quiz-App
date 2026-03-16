@@ -39,4 +39,35 @@ router.get('/', authenticate, authorize(['admin']), userController.getAllUsers);
  */
 router.delete('/account', authenticate, userController.deleteAccount);
 
+/**
+ * @route GET /api/users/quiz-results
+ * @desc Get current user's quiz results only
+ * @middleware authenticate
+ */
+router.get('/quiz-results', authenticate, userController.getUserQuizResults);
+
+/**
+ * @route POST /api/users/quiz-results
+ * @desc Save quiz result for current user
+ * @middleware authenticate
+ */
+router.post('/quiz-results', authenticate, userController.saveQuizResult);
+
+/**
+ * @route GET /api/users/quiz-stats
+ * @desc Get current user's quiz statistics
+ * @middleware authenticate
+ */
+router.get('/quiz-stats', authenticate, userController.getUserQuizStats);
+
+/**
+ * @route GET /api/users/leaderboard
+ * @desc Get global leaderboard (only users with quiz attempts)
+ * @query category - Optional category filter
+ * @query difficulty - Optional difficulty filter
+ * @query limit - Optional limit (default 50, max 100)
+ * @public - No authentication required
+ */
+router.get('/leaderboard', userController.getLeaderboard);
+
 export default router;
