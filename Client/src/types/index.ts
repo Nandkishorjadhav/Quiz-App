@@ -2,6 +2,21 @@
 
 export type Role = 'student' | 'admin';
 
+export interface UserProfile {
+  bio?: string;
+  phone?: string;
+  country?: string;
+  state?: string;
+  city?: string;
+  institution?: string;
+  totalQuizzesAttempted?: number;
+  totalQuizzesCompleted?: number;
+  averageScore?: number;
+  highestScore?: number;
+  totalTimeSpent?: number;
+  lastLoginAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -9,6 +24,7 @@ export interface User {
   role: Role;
   avatar?: string;
   createdAt: string;
+  profile?: UserProfile;
 }
 
 export interface AuthState {

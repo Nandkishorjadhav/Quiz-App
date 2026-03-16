@@ -30,6 +30,7 @@ export const storage = {
 // ─── Storage Keys ─────────────────────────────────────────────────────────────
 
 export const STORAGE_KEYS = {
+  AUTH_TOKEN: 'qm_auth_token',
   AUTH_USER: 'qm_auth_user',
   THEME: 'qm_theme',
   QUIZ_RESULTS: 'qm_results',
