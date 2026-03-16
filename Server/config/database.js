@@ -2,21 +2,39 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DB_PATH = path.join(__dirname, 'quiz_app.db');
+
+// Database configuration from environment
+const DB_TYPE = process.env.DB_TYPE || 'sqlite';
+const DB_PATH = process.env.DB_PATH ? path.resolve(process.env.DB_PATH) : path.join(__dirname, 'quiz_app.db');
+const DB_ENABLE_FOREIGN_KEYS = process.env.DB_ENABLE_FOREIGN_KEYS === 'true';
+const DB_LOG_QUERIES = process.env.DB_LOG_QUERIES === 'true';
 
 let db = null;
 
 export async function initializeDatabase() {
   try {
+    // Log database initialization info
+    console.log('🔧 Database Configuration:');
+    console.log(`   Type: ${DB_TYPE}`);
+    console.log(`   Path: ${DB_PATH}`);
+    console.log(`   Foreign Keys: ${DB_ENABLE_FOREIGN_KEYS}`);
+
     db = await open({
       filename: DB_PATH,
       driver: sqlite3.Database,
     });
 
-    // Enable foreign keys
-    await db.exec('PRAGMA foreign_keys = ON');
+    // Enable foreign keys if configured
+    if (DB_ENABLE_FOREIGN_KEYS) {
+      await db.exec('PRAGMA foreign_keys = ON');
+      console.log('✓ Foreign key constraints enabled');
+    }
 
     // Create users table
     await db.exec(`
