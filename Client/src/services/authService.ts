@@ -4,7 +4,16 @@ import type { ApiResponse, LoginCredentials, SignupCredentials, User } from '@/t
 import { storage, STORAGE_KEYS } from '@/utils/storage';
 
 // Backend API URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// Priority:
+// 1) VITE_API_URL (explicit backend URL)
+// 2) local dev fallback (localhost:5000)
+// 3) production same-origin (useful when API is reverse-proxied)
+const ENV_API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE_URL = ENV_API_URL
+  ? ENV_API_URL.replace(/\/$/, '')
+  : import.meta.env.DEV
+    ? 'http://localhost:5000'
+    : window.location.origin;
 
 // ─── API Client Helper ────────────────────────────────────────────────────────
 
@@ -17,19 +26,24 @@ async function apiRequest<T>(
 ): Promise<T> {
   const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
 
-  const headers: HeadersInit = {
+  const headers = new Headers({
     'Content-Type': 'application/json',
-    ...options.headers,
-  };
+    ...(options.headers ?? {}),
+  });
 
   if (token) {
-    headers.Authorization = `Bearer ${token}`;
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    throw new Error('Unable to connect to backend API. Start server or set VITE_API_URL correctly.');
+  }
 
   const data = await response.json();
 

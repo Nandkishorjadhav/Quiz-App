@@ -73,41 +73,6 @@ const STEPS = [
   { n: 4, label: 'Start',      icon: '🚀', desc: 'Launch quiz'  },
 ];
 
-const FEATURE_CARDS = [
-  {
-    icon: '📚',
-    title: '8 Programming Topics',
-    description: 'JavaScript, Python, Java, C++, SQL, React, TypeScript, and DSA — all in one place.',
-    gradient: 'from-blue-500/10 to-cyan-500/5',
-    iconBg: 'from-blue-500 to-cyan-500',
-    border: 'border-blue-200 dark:border-blue-800',
-  },
-  {
-    icon: '🎯',
-    title: 'Adaptive Difficulty',
-    description: 'Choose Easy, Medium, or Hard to match your current skill level and grow steadily.',
-    gradient: 'from-emerald-500/10 to-teal-500/5',
-    iconBg: 'from-emerald-500 to-teal-500',
-    border: 'border-emerald-200 dark:border-emerald-800',
-  },
-  {
-    icon: '⏱️',
-    title: 'Timed Challenges',
-    description: 'Set a custom time limit per question to simulate real exam pressure and improve speed.',
-    gradient: 'from-amber-500/10 to-orange-500/5',
-    iconBg: 'from-amber-500 to-orange-500',
-    border: 'border-amber-200 dark:border-amber-800',
-  },
-  {
-    icon: '🏆',
-    title: 'Global Leaderboard',
-    description: 'Compete with other users, track your rank, and see how you stack up globally.',
-    gradient: 'from-purple-500/10 to-pink-500/5',
-    iconBg: 'from-purple-500 to-pink-500',
-    border: 'border-purple-200 dark:border-purple-800',
-  },
-];
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
@@ -196,7 +161,7 @@ export default function DashboardPage() {
 
   // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-8 pb-16">
+    <div className="mx-auto max-w-[1280px] space-y-8 pb-16">
 
       {/* ════════════════════════════════════════════════════════════════════════
           HERO WELCOME BANNER
@@ -205,7 +170,7 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-3xl"
+        className="relative overflow-hidden rounded-[30px] border border-white/10 shadow-2xl shadow-primary-900/20"
       >
         {/* Gradient background */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-500 to-accent-500 opacity-90" />
@@ -216,7 +181,7 @@ export default function DashboardPage() {
         <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 border border-white/10" />
         <div className="absolute -bottom-12 -left-8 w-48 h-48 rounded-full bg-white/5 border border-white/10" />
 
-        <div className="relative px-6 py-8 sm:px-10 sm:py-10">
+        <div className="relative px-6 py-8 sm:px-10 sm:py-10 lg:px-12">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
               {/* Avatar */}
@@ -337,7 +302,7 @@ export default function DashboardPage() {
       {/* ════════════════════════════════════════════════════════════════════════
           MAIN CONTENT GRID: Wizard + Sidebar
       ════════════════════════════════════════════════════════════════════════ */}
-      <div id="quiz-wizard" className="grid lg:grid-cols-3 gap-6">
+      <div id="quiz-wizard" className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,1fr)]">
 
         {/* ── LEFT: wizard ─────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-5">
@@ -405,7 +370,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-4">
                   {CATEGORIES.map((cat, i) => (
                     <motion.button
                       key={cat.id}
@@ -413,7 +378,7 @@ export default function DashboardPage() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.04 }}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`group relative glass rounded-2xl p-4 text-left transition-all duration-200 flex flex-col
+                      className={`group relative glass rounded-2xl p-4 sm:p-5 text-left transition-all duration-200 flex flex-col min-h-[168px]
                         ${selectedCategory === cat.id
                           ? 'ring-2 ring-primary-500 bg-gradient-to-br from-primary-50/80 to-primary-100/30 dark:from-primary-900/30 dark:to-primary-800/10 shadow-lg shadow-primary-500/15'
                           : 'hover:ring-1 hover:ring-primary-300 dark:hover:ring-primary-700 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5'
@@ -434,7 +399,7 @@ export default function DashboardPage() {
                           : <span className="text-xl">{cat.icon}</span>}
                       </div>
                       <p className="font-extrabold text-sm text-[var(--text)]">{cat.label}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-0.5 line-clamp-2 leading-relaxed">{cat.description}</p>
+                      <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)] line-clamp-3">{cat.description}</p>
                     </motion.button>
                   ))}
                 </div>
@@ -695,7 +660,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ── RIGHT: history + tips ─────────────────────────────────────────── */}
-        <div className="space-y-5">
+        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
 
           {/* Recent History */}
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
@@ -802,91 +767,40 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="mt-4 space-y-8"
+        className="mt-3"
       >
-        {/* Section header */}
-        <div className="text-center">
-          <span className="inline-block px-4 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-300 text-xs font-bold mb-4">
-            ✨ About This Platform
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[var(--text)]">
-            What is{' '}
-            <span className="bg-gradient-to-r from-primary-500 to-accent-500 bg-clip-text text-transparent">
-              QuizMaster Pro
-            </span>
-            ?
-          </h2>
-          <p className="text-[var(--text-muted)] mt-3 max-w-2xl mx-auto text-sm sm:text-base leading-relaxed">
-            An interactive quiz platform designed to help students and developers sharpen their programming skills through practice exams, instant feedback, and progress tracking.
-          </p>
-        </div>
+        <Card className="overflow-hidden border border-[var(--border)]" padding="none">
+          <div className="border-b border-[var(--border)] bg-gradient-to-r from-primary-500/10 via-accent-500/5 to-transparent px-5 py-4 sm:px-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary-500">Study Mode</p>
+            <h3 className="mt-1 text-lg font-extrabold text-[var(--text)]">Build consistency, then speed</h3>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">A clean routine gives better scores than random practice. Keep this simple sequence each day.</p>
+          </div>
 
-        {/* Feature grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {FEATURE_CARDS.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.07 }}
-              className={`glass rounded-2xl p-5 border ${feature.border} bg-gradient-to-br ${feature.gradient} hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group`}
-            >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.iconBg} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-200`}>
-                <span className="text-2xl">{feature.icon}</span>
+          <div className="grid gap-3 p-4 sm:grid-cols-3 sm:p-5">
+            {[
+              { title: 'Warm-up', desc: 'Take 5 Easy questions to identify weak spots quickly.', badge: '5 min', tone: 'from-blue-500/15 to-cyan-500/5' },
+              { title: 'Core Drill', desc: 'Run 10-15 Medium questions with shuffled options.', badge: '15 min', tone: 'from-emerald-500/15 to-teal-500/5' },
+              { title: 'Pressure Set', desc: 'Finish with Hard mode using lower time per question.', badge: '8 min', tone: 'from-amber-500/15 to-orange-500/5' },
+            ].map((item) => (
+              <div key={item.title} className={`rounded-2xl border border-[var(--border)] bg-gradient-to-br ${item.tone} p-4`}>
+                <p className="text-xs font-semibold text-[var(--text-muted)]">{item.badge}</p>
+                <p className="mt-1 text-sm font-extrabold text-[var(--text)]">{item.title}</p>
+                <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">{item.desc}</p>
               </div>
-              <h3 className="font-extrabold text-[var(--text)] mb-1.5 text-sm">{feature.title}</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* How it works */}
-        <div className="glass rounded-3xl border border-[var(--border)] overflow-hidden">
-          <div className="px-6 sm:px-8 pt-7">
-            <div className="text-center mb-8">
-              <h3 className="text-lg sm:text-xl font-extrabold text-[var(--text)]">How It Works</h3>
-              <p className="text-sm text-[var(--text-muted)] mt-1">Four simple steps to start sharpening your skills</p>
-            </div>
-            <div className="grid sm:grid-cols-4 gap-6 pb-8">
-              {[
-                { step: '1', icon: '📂', title: 'Pick a Category', desc: "Choose from 8 programming topics that match what you're studying." },
-                { step: '2', icon: '🎚️', title: 'Set Difficulty',  desc: 'Select Easy, Medium, or Hard to get questions suited to your level.' },
-                { step: '3', icon: '⚙️', title: 'Configure Quiz',  desc: 'Adjust question count, timer, shuffle, and negative marking options.' },
-                { step: '4', icon: '✅', title: 'Review Results',  desc: 'See your score, correct answers, explanations, and detailed feedback.' },
-              ].map((item, i, arr) => (
-                <div key={item.step} className="flex flex-col items-center text-center relative">
-                  <motion.div
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.5 + i * 0.1, type: 'spring' }}
-                    className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white font-extrabold text-xl shadow-xl shadow-primary-500/25 mb-3"
-                  >
-                    {item.step}
-                  </motion.div>
-                  <span className="text-2xl mb-2">{item.icon}</span>
-                  <p className="font-extrabold text-[var(--text)] text-sm mb-1.5">{item.title}</p>
-                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">{item.desc}</p>
-                  {i < arr.length - 1 && (
-                    <div className="hidden sm:flex absolute top-7 left-[calc(100%-4px)] w-8 items-center justify-center">
-                      <ArrowRight size={14} className="text-primary-300 dark:text-primary-700" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
 
-          {/* Bottom CTA strip */}
-          <div className="bg-gradient-to-r from-primary-500/10 to-accent-500/10 border-t border-[var(--border)] px-6 sm:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-sm font-semibold text-[var(--text)]">Ready to test your knowledge? Let's go! 🚀</p>
-            <button
+          <div className="flex flex-col items-start justify-between gap-3 border-t border-[var(--border)] px-5 py-4 sm:flex-row sm:items-center sm:px-6">
+            <p className="text-sm font-semibold text-[var(--text)]">Ready for your next attempt?</p>
+            <Button
+              size="sm"
+              rightIcon={<ArrowRight size={14} />}
               onClick={() => document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 to-accent-500 text-white rounded-xl font-bold text-sm shadow-md shadow-primary-500/25 hover:opacity-90 transition-opacity"
             >
-              Start Quiz <ArrowRight size={14} />
-            </button>
+              Continue Quiz Setup
+            </Button>
           </div>
-        </div>
+        </Card>
       </motion.section>
     </div>
   );
