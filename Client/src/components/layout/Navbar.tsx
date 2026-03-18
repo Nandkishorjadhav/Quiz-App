@@ -1,6 +1,6 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Moon, Sun, LogOut, LayoutDashboard, ShieldCheck, Trophy } from 'lucide-react';
+import { Moon, Sun, LogOut, LayoutDashboard, ShieldCheck, Trophy, Radio } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/Button';
@@ -9,6 +9,7 @@ import { cn } from '@/utils/helpers';
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -40,6 +41,9 @@ export function Navbar() {
             <NavLink to="/leaderboard" icon={<Trophy size={15} />} label="Leaderboard" />
             {user?.role === 'admin' && (
               <NavLink to="/admin" icon={<ShieldCheck size={15} />} label="Admin" />
+            )}
+            {user?.role === 'admin' && location.pathname.startsWith('/admin') && (
+              <NavLink to="/special-quizzes" icon={<Radio size={15} />} label="Create Live Quiz" />
             )}
           </nav>
         )}

@@ -101,6 +101,9 @@ export async function initializeDatabase() {
       )
     `);
 
+    // Keep the demo admin account consistent even if it was created before role fixes.
+    await db.run(`UPDATE users SET role = 'admin' WHERE LOWER(email) = LOWER(?)`, ['admin@demo.com']);
+
     console.log('✓ Database initialized successfully');
     return db;
   } catch (error) {

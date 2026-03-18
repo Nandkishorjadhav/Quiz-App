@@ -9,14 +9,15 @@ const db = () => getDatabase();
  * @returns {Promise<object>} Created user object
  */
 export async function createUser(userData) {
-  const { name, email, password } = userData;
+  const { name, email, password, role } = userData;
   const uuid = randomUUID();
+  const safeRole = role === 'admin' ? 'admin' : 'student';
 
   try {
     const result = await db().run(
       `INSERT INTO users (uuid, name, email, password, role) 
        VALUES (?, ?, ?, ?, ?)`,
-      [uuid, name, email, password, 'student']
+      [uuid, name, email, password, safeRole]
     );
 
     // Create user profile
@@ -30,7 +31,7 @@ export async function createUser(userData) {
       uuid,
       name,
       email,
-      role: 'student',
+      role: safeRole,
       createdAt: new Date().toISOString(),
     };
   } catch (error) {
