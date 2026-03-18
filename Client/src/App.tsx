@@ -18,6 +18,7 @@ const JoinQuizPage = lazy(() => import('@/pages/JoinQuizPage'));
 const LiveExamPage = lazy(() => import('@/pages/LiveExamPage'));
 const LiveQuizRoomPage = lazy(() => import('@/pages/LiveQuizRoomPage'));
 const LiveResultsPage = lazy(() => import('@/pages/LiveResultsPage'));
+const GeneralAdminPanelPage = lazy(() => import('@/pages/GeneralAdminPanelPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
 export default function App() {
@@ -100,6 +101,9 @@ export default function App() {
 
         {/* ── PUBLIC: Live exam link (no login required) ── */}
         <Route path="/live/:id" element={<LiveExamPage />} />
+
+        {/* ── PUBLIC: General admin panel (no login required) ── */}
+        <Route path="/general-admin" element={<GeneralAdminPanelPage />} />
 
         {/* Special Quizzes — admin only */}
         <Route

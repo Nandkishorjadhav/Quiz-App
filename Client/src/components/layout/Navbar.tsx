@@ -46,6 +46,15 @@ export function Navbar() {
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/general-admin')}
+            className="hidden sm:inline-flex"
+          >
+            General Admin
+          </Button>
+
           {/* Theme toggle */}
           <button
             onClick={toggleTheme}
@@ -94,6 +103,9 @@ export function Navbar() {
             </>
           ) : (
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate('/general-admin')}>
+                General Admin
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
                 Sign In
               </Button>
