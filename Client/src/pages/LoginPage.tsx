@@ -43,7 +43,7 @@ export default function LoginPage() {
       setValue('password', 'Student123');
     } else {
       setValue('email', 'admin@demo.com');
-      setValue('password', 'Admin1234');
+      setValue('password', 'Admin@123');
     }
   };
 

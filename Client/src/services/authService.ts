@@ -3,6 +3,18 @@
 import type { ApiResponse, LoginCredentials, SignupCredentials, User } from '@/types';
 import { storage, STORAGE_KEYS } from '@/utils/storage';
 
+const OFFLINE_ADMIN_EMAIL = 'admin@demo.com';
+const OFFLINE_ADMIN_PASSWORD = 'Admin@123';
+const OFFLINE_ADMIN_TOKEN = 'qm_offline_admin_token';
+
+const OFFLINE_ADMIN_USER: User = {
+  id: 'offline-admin-1',
+  name: 'Admin',
+  email: OFFLINE_ADMIN_EMAIL,
+  role: 'admin',
+  createdAt: new Date(0).toISOString(),
+};
+
 // Backend API URL
 // Priority:
 // 1) VITE_API_URL (explicit backend URL)
@@ -61,6 +73,20 @@ export const authService = {
    * Login with email and password
    */
   async login(credentials: LoginCredentials): Promise<ApiResponse<User>> {
+    const isOfflineAdminLogin =
+      credentials.email.trim().toLowerCase() === OFFLINE_ADMIN_EMAIL &&
+      credentials.password === OFFLINE_ADMIN_PASSWORD;
+
+    if (isOfflineAdminLogin) {
+      storage.set(STORAGE_KEYS.AUTH_TOKEN, OFFLINE_ADMIN_TOKEN);
+      storage.set(STORAGE_KEYS.AUTH_USER, OFFLINE_ADMIN_USER);
+      return {
+        data: OFFLINE_ADMIN_USER,
+        message: 'Offline admin login successful',
+        success: true,
+      };
+    }
+
     try {
       const response = await apiRequest<any>('/api/auth/login', {
         method: 'POST',
@@ -128,12 +154,25 @@ export const authService = {
   async getMe(): Promise<ApiResponse<User | null>> {
     try {
       const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
+      const localUser = storage.get<User>(STORAGE_KEYS.AUTH_USER);
       
       if (!token) {
         return {
           data: null,
           message: 'Not authenticated',
           success: false,
+        };
+      }
+
+      if (
+        token === OFFLINE_ADMIN_TOKEN &&
+        localUser?.email?.toLowerCase() === OFFLINE_ADMIN_EMAIL &&
+        localUser?.role === 'admin'
+      ) {
+        return {
+          data: localUser,
+          message: 'Offline session restored',
+          success: true,
         };
       }
 
