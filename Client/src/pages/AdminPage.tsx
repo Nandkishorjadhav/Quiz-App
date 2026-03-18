@@ -234,20 +234,22 @@ export default function AdminPage() {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold text-[var(--text)]">Admin Panel</h1>
-            <p className="text-xs text-[var(--text-muted)]">Manage all quiz questions across categories</p>
+            <p className="text-xs text-[var(--text-muted)]">Manage questions, create live quizzes for multiple students</p>
           </div>
         </div>
-        <Button variant="primary" leftIcon={<Plus size={16} />} onClick={() => openCreate()}>
-          Add Question
-        </Button>
-        <Button
-          variant="outline"
-          leftIcon={<Radio size={16} />}
-          onClick={() => navigate('/special-quizzes')}
-          className="border-violet-400 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20"
-        >
-          Special Quizzes
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="primary"
+            leftIcon={<Radio size={16} />}
+            onClick={() => navigate('/special-quizzes')}
+            className="bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700"
+          >
+            Create Live Quiz
+          </Button>
+          <Button variant="secondary" leftIcon={<Plus size={16} />} onClick={() => openCreate()}>
+            Add Question
+          </Button>
+        </div>
       </motion.div>
 
       {/* ── Stats row ────────────────────────────────────────────────────────── */}
