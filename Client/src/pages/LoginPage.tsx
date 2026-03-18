@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, Zap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Zap, Radio } from 'lucide-react';
 import { loginSchema, type LoginFormValues } from '@/utils/validators';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/Button';
@@ -71,6 +71,19 @@ export default function LoginPage() {
           🛡️ Demo Admin
         </button>
       </div>
+
+      {/* Quick access to General Admin Panel */}
+      <motion.button
+        type="button"
+        onClick={() => navigate('/general-admin')}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="w-full bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 border-2 border-violet-400/50 hover:border-violet-400 rounded-xl px-4 py-3 flex items-center justify-center gap-2 transition-all"
+      >
+        <Radio size={16} className="text-violet-500" />
+        <span className="text-sm font-semibold text-violet-600 dark:text-violet-400">Create & Share Quiz (No Login)</span>
+      </motion.button>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <Input
