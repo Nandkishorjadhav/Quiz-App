@@ -135,8 +135,7 @@ export default function GeneralAdminPanelPage() {
 
   const handleStart = (quiz: SpecialQuiz) => {
     if (quiz.participants.length === 0) {
-      toast.error('No participants have joined yet');
-      return;
+      toast('Starting with 0 participants in local mode. Cross-device join sync needs backend/realtime DB.');
     }
     specialQuizService.start(quiz.id);
     toast.success('Quiz is now LIVE');
