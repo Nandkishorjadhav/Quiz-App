@@ -42,6 +42,24 @@ function getAllStoredQuestions(): Question[] {
   return [...MOCK_QUESTIONS, ...custom];
 }
 
+function encodeSnapshot(quiz: SpecialQuiz): string {
+  // URL-safe base64 of the quiz payload so link works across browsers/devices without backend state.
+  const json = JSON.stringify(quiz);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+function decodeSnapshot(snapshot: string): SpecialQuiz | null {
+  try {
+    const b64 = snapshot.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - (b64.length % 4 || 4)) % 4);
+    const json = decodeURIComponent(escape(atob(padded)));
+    return JSON.parse(json) as SpecialQuiz;
+  } catch {
+    return null;
+  }
+}
+
 // ── Custom Categories ──────────────────────────────────────────────────────────
 
 export const categoryService = {
@@ -105,6 +123,31 @@ export const specialQuizService = {
 
   getById(id: string): SpecialQuiz | null {
     return this.getAll().find((q) => q.id === id) ?? null;
+  },
+
+  buildLiveLink(id: string, includeSnapshot = true): string {
+    const base = `${window.location.origin}/live/${id}`;
+    if (!includeSnapshot) return base;
+
+    const quiz = this.getById(id);
+    if (!quiz) return base;
+
+    const snapshot = encodeSnapshot(quiz);
+    return `${base}?snapshot=${snapshot}`;
+  },
+
+  hydrateFromSnapshot(id: string, snapshot: string): SpecialQuiz | null {
+    const decoded = decodeSnapshot(snapshot);
+    if (!decoded || decoded.id !== id) return null;
+
+    const all = this.getAll();
+    const exists = all.some((q) => q.id === id);
+    if (exists) {
+      this.update(decoded);
+    } else {
+      this.save([...all, decoded]);
+    }
+    return decoded;
   },
 
   save(quizzes: SpecialQuiz[]): void {

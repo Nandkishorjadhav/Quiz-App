@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Radio,
@@ -520,7 +520,9 @@ function PhaseResults({
 
 export default function LiveExamPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const quizId = id?.toUpperCase() ?? '';
+  const snapshotParam = new URLSearchParams(location.search).get('snapshot') ?? '';
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [quiz, setQuiz] = useState<SpecialQuiz | null>(null);
@@ -559,7 +561,10 @@ export default function LiveExamPage() {
   useEffect(() => {
     if (!quizId) { setPhase('not_found'); return; }
 
-    const q = specialQuizService.getById(quizId);
+    let q = specialQuizService.getById(quizId);
+    if (!q && snapshotParam) {
+      q = specialQuizService.hydrateFromSnapshot(quizId, snapshotParam);
+    }
     if (!q) { setPhase('not_found'); return; }
     setQuiz(q);
     setRanked(specialQuizService.getRankedParticipants(q));
@@ -592,7 +597,7 @@ export default function LiveExamPage() {
     if (q.status === 'ended') setPhase('ended_gate');
     else setPhase('name_entry');
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quizId]);
+  }, [quizId, snapshotParam]);
 
   // Polling
   useEffect(() => {

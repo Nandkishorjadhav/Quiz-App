@@ -133,7 +133,7 @@ export default function SpecialQuizManagePage() {
   };
 
   const copyLink = (id: string) => {
-    const link = `${window.location.origin}/live/${id}`;
+    const link = specialQuizService.buildLiveLink(id, true);
     navigator.clipboard.writeText(link).then(() => {
       setCopied(id);
       setTimeout(() => setCopied(null), 2000);
