@@ -40,6 +40,30 @@ const API_BASE_URL = ENV_API_URL
   ? 'http://localhost:5000'
   : window.location.origin;
 
+function isGenericName(name?: string): boolean {
+  if (!name) return true;
+  const v = name.trim().toLowerCase();
+  return v === 'user' || v.startsWith('player ');
+}
+
+function knownUserNames(): Map<string, string> {
+  const map = new Map<string, string>();
+  const authUser = storage.get<{ id: string; name: string }>(STORAGE_KEYS.AUTH_USER);
+  const results = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
+
+  if (authUser?.id && authUser?.name) {
+    map.set(String(authUser.id), authUser.name);
+  }
+
+  for (const r of results) {
+    if (r.userId && r.userName && !isGenericName(r.userName)) {
+      map.set(String(r.userId), r.userName);
+    }
+  }
+
+  return map;
+}
+
 function buildLocalLeaderboard(category?: Category): LeaderboardEntry[] {
   const allResults = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
   const filtered = category
@@ -49,15 +73,16 @@ function buildLocalLeaderboard(category?: Category): LeaderboardEntry[] {
   if (filtered.length === 0) return [];
 
   const authUser = storage.get<{ id: string; name: string }>(STORAGE_KEYS.AUTH_USER);
+  const names = knownUserNames();
   const byUser = new Map<string, LeaderboardEntry>();
 
   for (const r of filtered) {
     const existing = byUser.get(r.userId);
     const userName =
-      r.userName ||
-      (r.userId === authUser?.id ? authUser.name : undefined) ||
-      (r.userId === 'guest' && authUser?.name ? authUser.name : undefined) ||
-      `Player ${String(r.userId).slice(0, 6)}`;
+      (!isGenericName(r.userName) ? r.userName : undefined) ||
+      names.get(String(r.userId)) ||
+      (authUser?.id && String(authUser.id) === String(r.userId) ? authUser.name : undefined) ||
+      'User';
 
     if (!existing) {
       byUser.set(r.userId, {
@@ -259,6 +284,9 @@ export const quizService = {
 
   async getLeaderboard(category?: Category): Promise<ApiResponse<LeaderboardEntry[]>> {
     try {
+      const names = knownUserNames();
+      const authUser = storage.get<{ id: string; name: string }>(STORAGE_KEYS.AUTH_USER);
+
       // Build query string
       const params = new URLSearchParams();
       if (category) {
@@ -276,18 +304,47 @@ export const quizService = {
 
       const data = await response.json();
 
-      // Format backend response to match frontend format
-      const formatted: LeaderboardEntry[] = data.data.map((entry: any) => ({
-        id: entry.userId.toString(),
-        userId: entry.userId,
-        userName: entry.userName,
-        category: entry.category,
-        difficulty: entry.difficulty,
-        score: entry.score,
-        percentage: entry.percentage,
-        timeTaken: entry.totalTimeSpent || 0,
-        completedAt: entry.lastAttemptedAt || new Date().toISOString(),
-      }));
+      // Normalize backend rows (which can contain multiple category/difficulty rows per user)
+      // into one best row per user so all users are visible globally.
+      const byUser = new Map<string, LeaderboardEntry>();
+
+      for (const entry of data.data ?? []) {
+        const key = String(entry.userId);
+        const resolvedName =
+          !isGenericName(entry.userName)
+            ? entry.userName
+            : names.get(key) || (authUser?.id && String(authUser.id) === key ? authUser.name : 'User');
+
+        const row: LeaderboardEntry = {
+          id: key,
+          userId: entry.userId,
+          userName: resolvedName,
+          category: entry.category,
+          difficulty: entry.difficulty,
+          score: Number(entry.score) || Number(entry.percentage) || 0,
+          percentage: Number(entry.percentage) || 0,
+          timeTaken: Number(entry.totalTimeSpent) || 0,
+          completedAt: entry.lastAttemptedAt || new Date().toISOString(),
+        };
+
+        const existing = byUser.get(key);
+        if (!existing) {
+          byUser.set(key, row);
+          continue;
+        }
+
+        const better =
+          row.percentage > existing.percentage ||
+          (row.percentage === existing.percentage && row.timeTaken < existing.timeTaken);
+
+        if (better) {
+          byUser.set(key, row);
+        }
+      }
+
+      const formatted = Array.from(byUser.values()).sort(
+        (a, b) => b.percentage - a.percentage || a.timeTaken - b.timeTaken,
+      );
 
       if (formatted.length === 0) {
         const local = buildLocalLeaderboard(category);
