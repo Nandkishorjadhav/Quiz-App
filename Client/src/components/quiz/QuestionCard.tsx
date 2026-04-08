@@ -33,10 +33,10 @@ function OptionButton({
 
   const state = showResult
     ? isCorrect
-      ? 'border-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300'
+      ? 'border-emerald-500 bg-emerald-100 text-emerald-900 dark:bg-emerald-900/20 dark:text-emerald-300'
       : isWrong
-      ? 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300'
-      : 'border-[var(--border)] text-[var(--text-muted)] opacity-60'
+      ? 'border-red-500 bg-red-100 text-red-900 dark:bg-red-900/20 dark:text-red-300'
+      : 'border-[var(--border)] bg-slate-50 text-slate-600 dark:bg-transparent dark:text-[var(--text-muted)] opacity-80'
     : isSelected
     ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 ring-2 ring-primary-400/30'
     : 'border-[var(--border)] text-[var(--text)] hover:border-primary-300 hover:bg-primary-50/50 dark:hover:bg-primary-900/10 cursor-pointer';
@@ -61,7 +61,7 @@ function OptionButton({
               ? 'bg-emerald-500 text-white'
               : isWrong
               ? 'bg-red-500 text-white'
-              : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-300'
+              : 'bg-slate-300 text-slate-700 dark:bg-gray-600 dark:text-gray-300'
             : isSelected
             ? 'bg-primary-500 text-white'
             : 'bg-gray-100 dark:bg-gray-700 text-[var(--text-muted)]',
@@ -145,10 +145,10 @@ export function QuestionCard({
         <motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-4"
+          className="bg-blue-100 border border-blue-300 rounded-xl p-4 dark:bg-blue-900/20 dark:border-blue-700"
         >
-          <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Explanation</p>
-          <p className="text-sm text-blue-700 dark:text-blue-300">{question.explanation}</p>
+          <p className="text-xs font-semibold text-blue-800 dark:text-blue-400 mb-1">Explanation</p>
+          <p className="text-sm text-blue-900 dark:text-blue-300">{question.explanation}</p>
         </motion.div>
       )}
     </motion.div>

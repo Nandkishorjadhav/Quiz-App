@@ -33,6 +33,13 @@ function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
+const ENV_API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE_URL = ENV_API_URL
+  ? ENV_API_URL.replace(/\/$/, '')
+  : import.meta.env.DEV
+  ? 'http://localhost:5000'
+  : window.location.origin;
+
 function getAllQuestions(): Question[] {
   const custom = storage.get<Question[]>(STORAGE_KEYS.CUSTOM_QUESTIONS) ?? [];
   return [...MOCK_QUESTIONS, ...custom];
@@ -151,8 +158,29 @@ export const quizService = {
     const results = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
     storage.set(STORAGE_KEYS.QUIZ_RESULTS, [...results, result]);
 
-    // Note: Leaderboard is now fetched from backend API
-    // Do not add to localStorage leaderboard anymore
+    // Also persist to backend so global leaderboard can rank all users.
+    const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
+    if (token && result.userId !== 'guest') {
+      try {
+        await fetch(`${API_BASE_URL}/api/users/quiz-results`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            category: result.config.category,
+            difficulty: result.config.difficulty,
+            score: result.percentage,
+            totalQuestions: result.questionResults.length,
+            correctAnswers: result.correctCount,
+            timeSpent: result.timeTaken,
+          }),
+        });
+      } catch (error) {
+        console.error('Failed to sync quiz result to backend:', error);
+      }
+    }
 
     return { data: result, message: 'Result saved', success: true };
   },
@@ -188,20 +216,70 @@ export const quizService = {
 
       const data = await response.json();
 
-      // Format backend response to match frontend format
-      const formatted: LeaderboardEntry[] = data.data.map((entry: any) => ({
-        id: entry.userId.toString(),
-        userId: entry.userId,
-        userName: entry.userName,
-        category: entry.category,
-        difficulty: entry.difficulty,
-        score: entry.score,
-        percentage: entry.percentage,
-        timeTaken: entry.totalTimeSpent || 0,
-        completedAt: entry.lastAttemptedAt || new Date().toISOString(),
-      }));
+      // Backend may return multiple rows per user (category/difficulty wise).
+      // Consolidate to one ranked row per user for a global leaderboard.
+      const byUser = new Map<string, {
+        userId: string;
+        userName: string;
+        bestPercentage: number;
+        bestScore: number;
+        category: Category;
+        difficulty: Difficulty;
+        totalTimeSpent: number;
+        completedAt: string;
+      }>();
 
-      return { data: formatted, message: 'OK', success: true };
+      for (const entry of data.data ?? []) {
+        const key = String(entry.userId);
+        const current = byUser.get(key);
+        const entryPercentage = Number(entry.percentage) || 0;
+        const entryScore = Number(entry.score) || entryPercentage;
+        const entryTime = Number(entry.totalTimeSpent) || 0;
+        const entryDate = entry.lastAttemptedAt || new Date().toISOString();
+
+        if (!current) {
+          byUser.set(key, {
+            userId: key,
+            userName: entry.userName,
+            bestPercentage: entryPercentage,
+            bestScore: entryScore,
+            category: entry.category,
+            difficulty: entry.difficulty,
+            totalTimeSpent: entryTime,
+            completedAt: entryDate,
+          });
+          continue;
+        }
+
+        const shouldReplaceBest =
+          entryPercentage > current.bestPercentage ||
+          (entryPercentage === current.bestPercentage && entryDate > current.completedAt);
+
+        current.totalTimeSpent += entryTime;
+        if (shouldReplaceBest) {
+          current.bestPercentage = entryPercentage;
+          current.bestScore = entryScore;
+          current.category = entry.category;
+          current.difficulty = entry.difficulty;
+          current.completedAt = entryDate;
+        }
+      }
+
+      const ranked = Array.from(byUser.values())
+        .sort((a, b) => b.bestPercentage - a.bestPercentage || a.totalTimeSpent - b.totalTimeSpent)
+        .map((u): LeaderboardEntry => ({
+          id: u.userId,
+          userId: u.userId,
+          userName: u.userName,
+          category: u.category,
+          difficulty: u.difficulty,
+          score: u.bestScore,
+          percentage: u.bestPercentage,
+          timeTaken: u.totalTimeSpent,
+          completedAt: u.completedAt,
+        }));
+
+      return { data: ranked, message: 'OK', success: true };
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
       // Fallback to empty leaderboard on error

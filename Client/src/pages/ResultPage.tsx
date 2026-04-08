@@ -253,7 +253,16 @@ export default function ResultPage() {
                 <div key={qr.question.id} className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-[var(--text-muted)]">Q{i + 1}</span>
-                    <Badge variant={qr.isCorrect ? 'success' : qr.selectedOptionId ? 'danger' : 'default'}>
+                    <Badge
+                      variant={qr.isCorrect ? 'success' : qr.selectedOptionId ? 'danger' : 'default'}
+                      className={
+                        qr.isCorrect
+                          ? 'text-emerald-800 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-900/40'
+                          : qr.selectedOptionId
+                          ? 'text-red-800 bg-red-100 dark:text-red-300 dark:bg-red-900/40'
+                          : 'text-slate-700 bg-slate-100 dark:text-gray-300 dark:bg-gray-800'
+                      }
+                    >
                       {qr.isCorrect ? '✓ Correct' : qr.selectedOptionId ? '✗ Wrong' : '— Skipped'}
                     </Badge>
                     <span className="text-xs text-[var(--text-muted)]">+{qr.pointsEarned}pts</span>
