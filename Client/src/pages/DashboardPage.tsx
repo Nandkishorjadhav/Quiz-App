@@ -246,7 +246,7 @@ export default function DashboardPage() {
           {/* CTA buttons */}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
-              onClick={() => document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('home-quiz')?.scrollIntoView({ behavior: 'smooth' })}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary-600 rounded-xl font-bold text-sm shadow-lg shadow-black/20 hover:bg-primary-50 transition-colors"
             >
               <Zap size={15} />
@@ -269,6 +269,54 @@ export default function DashboardPage() {
               </button>
             )}
           </div>
+        </div>
+      </motion.div>
+
+      {/* ── Home page section segregation ───────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="glass rounded-2xl p-3 sm:p-4"
+      >
+        <div className="grid gap-2 sm:grid-cols-3">
+          {[
+            {
+              id: 'home-quiz',
+              title: 'Quiz Setup',
+              desc: 'Pick category, difficulty, and start exam',
+              icon: <Play size={14} className="text-primary-500" />,
+              tone: 'from-primary-500/10 to-accent-500/5',
+            },
+            {
+              id: 'home-history',
+              title: 'History',
+              desc: 'See your recent attempts and performance',
+              icon: <BookOpen size={14} className="text-emerald-500" />,
+              tone: 'from-emerald-500/10 to-teal-500/5',
+            },
+            {
+              id: 'home-study',
+              title: 'Study Mode',
+              desc: 'Follow a focused daily practice routine',
+              icon: <Target size={14} className="text-amber-500" />,
+              tone: 'from-amber-500/10 to-orange-500/5',
+            },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+              className={`text-left rounded-xl border border-[var(--border)] bg-gradient-to-br ${item.tone} p-3 sm:p-3.5 hover:border-primary-300 transition-all duration-200`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[var(--bg-card)] border border-[var(--border)] flex items-center justify-center">
+                  {item.icon}
+                </span>
+                <p className="text-sm font-extrabold text-[var(--text)]">{item.title}</p>
+              </div>
+              <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{item.desc}</p>
+            </button>
+          ))}
         </div>
       </motion.div>
 
@@ -302,10 +350,10 @@ export default function DashboardPage() {
       {/* ════════════════════════════════════════════════════════════════════════
           MAIN CONTENT GRID: Wizard + Sidebar
       ════════════════════════════════════════════════════════════════════════ */}
-      <div id="quiz-wizard" className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,1fr)]">
+      <div id="home-quiz" className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,1fr)]">
 
         {/* ── LEFT: wizard ─────────────────────────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="space-y-5">
 
           {/* Step progress indicator */}
           <motion.div
@@ -660,10 +708,14 @@ export default function DashboardPage() {
         </div>
 
         {/* ── RIGHT: history + tips ─────────────────────────────────────────── */}
-        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start rounded-2xl border border-[var(--border)] p-3 bg-gradient-to-b from-emerald-500/5 to-transparent">
+          <div className="px-1 pb-1 border-b border-[var(--border)]">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">History Section</p>
+            <p className="text-sm font-bold text-[var(--text)]">Past Attempts & Progress</p>
+          </div>
 
           {/* Recent History */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          <motion.div id="home-history" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <Card padding="none" className="overflow-hidden">
               <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-[var(--border)]">
                 <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
@@ -764,10 +816,11 @@ export default function DashboardPage() {
           ABOUT / FEATURES SECTION
       ════════════════════════════════════════════════════════════════════════ */}
       <motion.section
+        id="home-study"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="mt-3"
+        className="mt-6 pt-3 border-t border-[var(--border)]"
       >
         <Card className="overflow-hidden border border-[var(--border)]" padding="none">
           <div className="border-b border-[var(--border)] bg-gradient-to-r from-primary-500/10 via-accent-500/5 to-transparent px-5 py-4 sm:px-6">
@@ -795,7 +848,7 @@ export default function DashboardPage() {
             <Button
               size="sm"
               rightIcon={<ArrowRight size={14} />}
-              onClick={() => document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('home-quiz')?.scrollIntoView({ behavior: 'smooth' })}
             >
               Continue Quiz Setup
             </Button>
