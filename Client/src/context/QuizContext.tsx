@@ -13,7 +13,7 @@ import type {
   QuizResult,
   QuizSession,
 } from '@/types';
-import { shuffle, calculateScore, generateId } from '@/utils/helpers';
+import { shuffle, generateId } from '@/utils/helpers';
 import { useAuth } from './AuthContext';
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -240,29 +240,19 @@ export function QuizProvider({ children }: { children: ReactNode }) {
       else if (isCorrect) correct++;
       else incorrect++;
 
-      const earned = isCorrect
-        ? q.points
-        : config.negativeMarking && qs.selectedOptionId
-        ? -(q.points * config.negativeMarkValue)
-        : 0;
-
       return {
         question: q,
         selectedOptionId: qs.selectedOptionId,
         isCorrect,
-        pointsEarned: Math.max(0, earned),
+        // Fixed scoring rule: each question carries 1 mark.
+        pointsEarned: isCorrect ? 1 : 0,
         timeSpent: qs.timeSpent,
       };
     });
 
-    const maxScore = questions.reduce((s, q) => s + q.points, 0);
-    const totalScore = calculateScore(
-      correct,
-      incorrect,
-      1,
-      config.negativeMarkValue,
-      config.negativeMarking,
-    );
+    // Max marks = number of questions (5 questions => 5 marks, 10 => 10, etc.)
+    const maxScore = questions.length;
+    const totalScore = correct;
     const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
     const result: QuizResult = {

@@ -33,6 +33,66 @@ function delay(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
+const ENV_API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const API_BASE_URL = ENV_API_URL
+  ? ENV_API_URL.replace(/\/$/, '')
+  : import.meta.env.DEV
+  ? 'http://localhost:5000'
+  : window.location.origin;
+
+function buildLocalLeaderboard(category?: Category): LeaderboardEntry[] {
+  const allResults = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
+  const filtered = category
+    ? allResults.filter((r) => r.config.category === category)
+    : allResults;
+
+  if (filtered.length === 0) return [];
+
+  const authUser = storage.get<{ id: string; name: string }>(STORAGE_KEYS.AUTH_USER);
+  const byUser = new Map<string, LeaderboardEntry>();
+
+  for (const r of filtered) {
+    const existing = byUser.get(r.userId);
+    const userName = r.userId === authUser?.id ? authUser.name : 'User';
+
+    if (!existing) {
+      byUser.set(r.userId, {
+        id: r.userId,
+        userId: r.userId,
+        userName,
+        category: r.config.category,
+        difficulty: r.config.difficulty,
+        score: r.totalScore,
+        percentage: r.percentage,
+        timeTaken: r.timeTaken,
+        completedAt: r.completedAt,
+      });
+      continue;
+    }
+
+    // Keep best attempt as the leaderboard entry.
+    const isBetter =
+      r.percentage > existing.percentage ||
+      (r.percentage === existing.percentage && r.timeTaken < existing.timeTaken);
+
+    if (isBetter) {
+      byUser.set(r.userId, {
+        ...existing,
+        category: r.config.category,
+        difficulty: r.config.difficulty,
+        score: r.totalScore,
+        percentage: r.percentage,
+        timeTaken: r.timeTaken,
+        completedAt: r.completedAt,
+      });
+    }
+  }
+
+  return Array.from(byUser.values()).sort(
+    (a, b) => b.percentage - a.percentage || a.timeTaken - b.timeTaken,
+  );
+}
+
 function getAllQuestions(): Question[] {
   const custom = storage.get<Question[]>(STORAGE_KEYS.CUSTOM_QUESTIONS) ?? [];
   return [...MOCK_QUESTIONS, ...custom];
@@ -151,8 +211,34 @@ export const quizService = {
     const results = storage.get<QuizResult[]>(STORAGE_KEYS.QUIZ_RESULTS) ?? [];
     storage.set(STORAGE_KEYS.QUIZ_RESULTS, [...results, result]);
 
-    // Note: Leaderboard is now fetched from backend API
-    // Do not add to localStorage leaderboard anymore
+    // Sync to backend so global leaderboard can include this attempt.
+    const token = storage.get<string>(STORAGE_KEYS.AUTH_TOKEN);
+    if (token && result.userId !== 'guest') {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users/quiz-results`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            category: result.config.category,
+            difficulty: result.config.difficulty,
+            score: result.percentage,
+            totalQuestions: result.maxScore,
+            correctAnswers: result.correctCount,
+            timeSpent: result.timeTaken,
+          }),
+        });
+
+        if (!response.ok) {
+          const txt = await response.text();
+          console.error('Failed to sync result to backend:', response.status, txt);
+        }
+      } catch (error) {
+        console.error('Failed to sync result to backend:', error);
+      }
+    }
 
     return { data: result, message: 'Result saved', success: true };
   },
@@ -169,8 +255,6 @@ export const quizService = {
 
   async getLeaderboard(category?: Category): Promise<ApiResponse<LeaderboardEntry[]>> {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      
       // Build query string
       const params = new URLSearchParams();
       if (category) {
@@ -201,11 +285,22 @@ export const quizService = {
         completedAt: entry.lastAttemptedAt || new Date().toISOString(),
       }));
 
+      if (formatted.length === 0) {
+        const local = buildLocalLeaderboard(category);
+        return { data: local, message: local.length ? 'OK (local fallback)' : 'OK', success: true };
+      }
+
       return { data: formatted, message: 'OK', success: true };
     } catch (error) {
       console.error('Failed to fetch leaderboard:', error);
-      // Fallback to empty leaderboard on error
-      return { data: [], message: 'Failed to fetch leaderboard', success: false };
+
+      // Fallback to local attempts so user still sees ranking data.
+      const local = buildLocalLeaderboard(category);
+      return {
+        data: local,
+        message: local.length ? 'OK (local fallback)' : 'Failed to fetch leaderboard',
+        success: local.length > 0,
+      };
     }
   },
 };
