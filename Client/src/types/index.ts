@@ -125,6 +125,7 @@ export interface QuestionResult {
 export interface QuizResult {
   id: string;
   userId: string;
+  userName?: string;
   config: QuizConfig;
   questionResults: QuestionResult[];
   totalScore: number;

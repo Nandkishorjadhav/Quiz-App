@@ -32,7 +32,7 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto px-2 sm:px-3">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -40,7 +40,7 @@ export default function LeaderboardPage() {
         className="flex items-center justify-between gap-4 flex-wrap"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+          <div className="w-11 h-11 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
             <Trophy className="text-white" size={20} />
           </div>
           <div>
@@ -54,7 +54,7 @@ export default function LeaderboardPage() {
           <Filter size={14} className="text-[var(--text-muted)]" />
           <button
             onClick={() => setFilter('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all
+            className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all
               ${filter === 'all' ? 'border-primary-500 bg-primary-500 text-white' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-primary-300'}`}
           >
             All
@@ -63,7 +63,7 @@ export default function LeaderboardPage() {
             <button
               key={c.id}
               onClick={() => setFilter(c.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all
+              className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all
                 ${filter === c.id ? 'border-primary-500 bg-primary-500 text-white' : 'border-[var(--border)] text-[var(--text-muted)] hover:border-primary-300'}`}
             >
               {c.icon} {c.label}
@@ -76,12 +76,12 @@ export default function LeaderboardPage() {
       <Card glass padding="none">
         {loading ? (
           <div className="p-5 space-y-3">
-            <Skeleton className="h-12 w-full" count={5} />
+            <Skeleton className="h-14 w-full" count={5} />
           </div>
         ) : entries.length === 0 ? (
-          <div className="py-16 text-center">
-            <p className="text-5xl mb-3">🏆</p>
-            <p className="text-[var(--text-muted)]">No entries yet. Be the first to top the board!</p>
+          <div className="py-20 text-center">
+            <p className="text-6xl mb-4">🏆</p>
+            <p className="text-lg text-[var(--text-muted)]">No entries yet. Be the first to top the board!</p>
           </div>
         ) : (
           <ol>
@@ -91,22 +91,22 @@ export default function LeaderboardPage() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`flex items-center gap-4 px-5 py-4 border-b last:border-b-0 border-[var(--border)] transition-colors
+                className={`flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3.5 sm:py-4 border-b last:border-b-0 border-[var(--border)] transition-colors
                   ${i === 0 ? 'bg-yellow-50/60 dark:bg-yellow-900/10' : i === 1 ? 'bg-gray-50/50 dark:bg-gray-800/20' : i === 2 ? 'bg-orange-50/50 dark:bg-orange-900/10' : ''}`}
               >
                 {/* Rank */}
-                <span className="w-10 text-center text-lg font-extrabold shrink-0">
+                <span className="w-11 text-center text-lg font-extrabold shrink-0">
                   {rankIcon(i + 1)}
                 </span>
 
                 {/* Avatar */}
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
                   {entry.userName.charAt(0).toUpperCase()}
                 </div>
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-[var(--text)] truncate">{entry.userName}</p>
+                  <p className="text-sm sm:text-base font-semibold text-[var(--text)] truncate">{entry.userName}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <Badge variant="primary" dot>{entry.category}</Badge>
                     <Badge
@@ -119,9 +119,9 @@ export default function LeaderboardPage() {
 
                 {/* Score */}
                 <div className="text-right shrink-0">
-                  <p className="text-base font-extrabold text-primary-500">{entry.percentage}%</p>
-                  <p className="text-xs text-[var(--text-muted)] flex items-center gap-1 justify-end">
-                    <Clock size={11} /> {formatTime(entry.timeTaken)}
+                  <p className="text-lg font-extrabold text-primary-500">{entry.percentage}%</p>
+                  <p className="text-xs sm:text-sm text-[var(--text-muted)] flex items-center gap-1 justify-end">
+                    <Clock size={12} /> {formatTime(entry.timeTaken)}
                   </p>
                 </div>
 

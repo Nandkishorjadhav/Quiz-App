@@ -53,7 +53,11 @@ function buildLocalLeaderboard(category?: Category): LeaderboardEntry[] {
 
   for (const r of filtered) {
     const existing = byUser.get(r.userId);
-    const userName = r.userId === authUser?.id ? authUser.name : 'User';
+    const userName =
+      r.userName ||
+      (r.userId === authUser?.id ? authUser.name : undefined) ||
+      (r.userId === 'guest' && authUser?.name ? authUser.name : undefined) ||
+      `Player ${String(r.userId).slice(0, 6)}`;
 
     if (!existing) {
       byUser.set(r.userId, {

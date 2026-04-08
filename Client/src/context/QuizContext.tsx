@@ -258,6 +258,7 @@ export function QuizProvider({ children }: { children: ReactNode }) {
     const result: QuizResult = {
       id: generateId(),
       userId: user?.id ?? 'guest',
+      userName: user?.name ?? 'Guest',
       config,
       questionResults,
       totalScore,
