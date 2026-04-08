@@ -347,10 +347,10 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          MAIN CONTENT GRID: Wizard + Sidebar
-      ════════════════════════════════════════════════════════════════════════ */}
-      <div id="home-quiz" className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,1fr)]">
+        {/* ════════════════════════════════════════════════════════════════════════
+          MAIN CONTENT FLOW: Quiz → History
+        ════════════════════════════════════════════════════════════════════════ */}
+        <div id="home-quiz" className="space-y-6">
 
         {/* ── LEFT: wizard ─────────────────────────────────────────────────── */}
         <div className="space-y-5">
@@ -707,8 +707,18 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* ── RIGHT: history + tips ─────────────────────────────────────────── */}
-        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start rounded-2xl border border-[var(--border)] p-3 bg-gradient-to-b from-emerald-500/5 to-transparent">
+        {/* Quiz -> History divider */}
+        <div className="relative py-1">
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-primary-400/60 to-transparent" />
+          <div className="mt-2 flex justify-center">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-primary-500 bg-[var(--bg)] px-2">
+              Quiz Section Completed
+            </span>
+          </div>
+        </div>
+
+        {/* ── HISTORY: shown after quiz section ─────────────────────────────── */}
+        <div className="space-y-5 rounded-2xl border border-[var(--border)] p-3 bg-gradient-to-b from-emerald-500/5 to-transparent">
           <div className="px-1 pb-1 border-b border-[var(--border)]">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500">History Section</p>
             <p className="text-sm font-bold text-[var(--text)]">Past Attempts & Progress</p>
@@ -820,8 +830,18 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="mt-6 pt-3 border-t border-[var(--border)]"
+        className="mt-7"
       >
+        {/* History -> Study divider */}
+        <div className="relative mb-4 py-1">
+          <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-400/70 to-transparent" />
+          <div className="mt-2 flex justify-center">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-amber-500 bg-[var(--bg)] px-2">
+              Study Mode Section
+            </span>
+          </div>
+        </div>
+
         <Card className="overflow-hidden border border-[var(--border)]" padding="none">
           <div className="border-b border-[var(--border)] bg-gradient-to-r from-primary-500/10 via-accent-500/5 to-transparent px-5 py-4 sm:px-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-primary-500">Study Mode</p>
