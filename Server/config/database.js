@@ -101,6 +101,82 @@ export async function initializeDatabase() {
       )
     `);
 
+    // Create AI-generated quiz questions table
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS ai_quiz_questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quizId TEXT NOT NULL,
+        topic TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
+        question TEXT NOT NULL,
+        option1 TEXT NOT NULL,
+        option2 TEXT NOT NULL,
+        option3 TEXT NOT NULL,
+        option4 TEXT NOT NULL,
+        correctAnswer TEXT NOT NULL,
+        questionOrder INTEGER NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create quiz attempts table
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS quiz_attempts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        quizId TEXT NOT NULL,
+        topic TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
+        totalQuestions INTEGER NOT NULL,
+        correctAnswers INTEGER NOT NULL,
+        score REAL NOT NULL,
+        percentage REAL NOT NULL,
+        timeTaken INTEGER NOT NULL,
+        answers TEXT NOT NULL,
+        status TEXT DEFAULT 'completed',
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create manual quiz questions table (for faculty-created quizzes)
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS manual_quiz_questions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        quizId TEXT NOT NULL,
+        creatorId INTEGER NOT NULL,
+        topic TEXT NOT NULL,
+        difficulty TEXT NOT NULL,
+        question TEXT NOT NULL,
+        option1 TEXT NOT NULL,
+        option2 TEXT NOT NULL,
+        option3 TEXT NOT NULL,
+        option4 TEXT NOT NULL,
+        correctAnswer TEXT NOT NULL,
+        questionOrder INTEGER NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (creatorId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create leaderboard table (materialized view for performance)
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS leaderboard_cache (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userId INTEGER NOT NULL,
+        userName TEXT NOT NULL,
+        totalAttempts INTEGER NOT NULL,
+        bestScore REAL NOT NULL,
+        averageScore REAL NOT NULL,
+        bestPercentage REAL NOT NULL,
+        totalTimeSpent INTEGER NOT NULL,
+        lastAttemptAt DATETIME,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(userId),
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
     // Keep the demo admin account consistent even if it was created before role fixes.
     await db.run(`UPDATE users SET role = 'admin' WHERE LOWER(email) = LOWER(?)`, ['admin@demo.com']);
 

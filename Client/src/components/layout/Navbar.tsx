@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Moon, Sun, LogOut, LayoutDashboard, ShieldCheck, Trophy, Radio } from 'lucide-react';
+import { Moon, Sun, LogOut, LayoutDashboard, ShieldCheck, Trophy, Radio, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
 import { Button } from '@/components/ui/Button';
@@ -39,6 +39,7 @@ export function Navbar() {
           <nav className="hidden sm:flex items-center gap-1" aria-label="Main navigation">
             <NavLink to="/dashboard" icon={<LayoutDashboard size={15} />} label="Dashboard" />
             <NavLink to="/leaderboard" icon={<Trophy size={15} />} label="Leaderboard" />
+            <NavLink to="/ai-quiz-generator" icon={<Sparkles size={15} />} label="AI Quiz" />
             {user?.role === 'admin' && (
               <NavLink to="/admin" icon={<ShieldCheck size={15} />} label="Admin" />
             )}

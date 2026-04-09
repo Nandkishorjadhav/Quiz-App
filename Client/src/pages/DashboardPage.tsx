@@ -18,6 +18,7 @@ import {
   TrendingUp,
   Star,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useQuiz } from '@/context/QuizContext';
@@ -26,54 +27,65 @@ import { CATEGORIES } from '@/data/categories';
 import type { Category, Difficulty, QuizConfig, QuizResult } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Toggle } from '@/components/ui/Toggle';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatTime, getGrade } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// ── Constants ──────────────────────────────────────────────────────────────────
 
-const DIFFICULTIES: { value: Difficulty; label: string; description: string; emoji: string; color: string; bg: string; ring: string }[] = [
+const DIFFICULTIES: {
+  value: Difficulty;
+  label: string;
+  description: string;
+  emoji: string;
+  color: string;
+  bg: string;
+  ring: string;
+  glow: string;
+}[] = [
   {
     value: 'easy',
     label: 'Easy',
-    description: 'Great for beginners. Covers fundamental concepts and basic syntax.',
+    description: 'Fundamentals and basic syntax. Perfect for getting started.',
     emoji: '🟢',
-    color: 'text-emerald-600 dark:text-emerald-400',
-    bg: 'from-emerald-500/15 to-emerald-400/5',
-    ring: 'ring-emerald-400',
+    color: 'text-emerald-400',
+    bg: 'from-emerald-500/10 to-emerald-400/5',
+    ring: 'ring-emerald-500',
+    glow: 'shadow-emerald-500/20',
   },
   {
     value: 'medium',
     label: 'Medium',
-    description: 'For intermediate learners. Tests practical understanding and patterns.',
+    description: 'Practical patterns for intermediate learners.',
     emoji: '🟡',
-    color: 'text-amber-600 dark:text-amber-400',
-    bg: 'from-amber-500/15 to-amber-400/5',
-    ring: 'ring-amber-400',
+    color: 'text-amber-400',
+    bg: 'from-amber-500/10 to-amber-400/5',
+    ring: 'ring-amber-500',
+    glow: 'shadow-amber-500/20',
   },
   {
     value: 'hard',
     label: 'Hard',
-    description: 'Advanced challenges. Deep concepts, edge cases, and complex problems.',
+    description: 'Edge cases, deep concepts, and advanced challenges.',
     emoji: '🔴',
-    color: 'text-red-600 dark:text-red-400',
-    bg: 'from-red-500/15 to-red-400/5',
-    ring: 'ring-red-400',
+    color: 'text-rose-400',
+    bg: 'from-rose-500/10 to-rose-400/5',
+    ring: 'ring-rose-500',
+    glow: 'shadow-rose-500/20',
   },
 ];
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 
 const STEPS = [
-  { n: 1, label: 'Category',   icon: '📚', desc: 'Pick a topic' },
-  { n: 2, label: 'Difficulty', icon: '🎯', desc: 'Set level'    },
-  { n: 3, label: 'Configure',  icon: '⚙️', desc: 'Customize'   },
-  { n: 4, label: 'Start',      icon: '🚀', desc: 'Launch quiz'  },
+  { n: 1, label: 'Category',   desc: 'Pick a topic' },
+  { n: 2, label: 'Difficulty', desc: 'Set level'    },
+  { n: 3, label: 'Configure',  desc: 'Customize'    },
+  { n: 4, label: 'Start',      desc: 'Launch quiz'  },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
+// ── Component ──────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   useDocumentTitle('Dashboard');
@@ -101,7 +113,7 @@ export default function DashboardPage() {
     }
   }, [user]);
 
-  // ── Wizard navigation ────────────────────────────────────────────────────────
+  // ── Wizard navigation ──────────────────────────────────────────────────────
   const canAdvance = () => {
     if (step === 1) return selectedCategory !== null;
     if (step === 2) return selectedDifficulty !== null;
@@ -119,7 +131,7 @@ export default function DashboardPage() {
 
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
-  // ── Start quiz ───────────────────────────────────────────────────────────────
+  // ── Start quiz ─────────────────────────────────────────────────────────────
   const handleStart = async () => {
     if (!selectedCategory || !selectedDifficulty) return;
     setIsStarting(true);
@@ -134,15 +146,17 @@ export default function DashboardPage() {
         negativeMarking,
         negativeMarkValue: 0.25,
       };
-
-      const res = await quizService.getQuestions(selectedCategory, selectedDifficulty, questionCount, shuffleQ);
-
+      const res = await quizService.getQuestions(
+        selectedCategory,
+        selectedDifficulty,
+        questionCount,
+        shuffleQ,
+      );
       if (res.data.length === 0) {
         toast.error('No questions found for this selection. Try another category or difficulty.');
         setIsStarting(false);
         return;
       }
-
       startQuiz(config, res.data);
       navigate('/quiz');
     } catch {
@@ -153,71 +167,85 @@ export default function DashboardPage() {
 
   const catMeta = CATEGORIES.find((c) => c.id === selectedCategory);
 
-  // ── Quick stats derived from recent results ──────────────────────────────────
+  // ── Derived stats ──────────────────────────────────────────────────────────
   const avgScore = recentResults.length
     ? Math.round(recentResults.reduce((s, r) => s + r.percentage, 0) / recentResults.length)
     : null;
-  const bestScore = recentResults.length ? Math.max(...recentResults.map((r) => r.percentage)) : null;
+  const bestScore = recentResults.length
+    ? Math.max(...recentResults.map((r) => r.percentage))
+    : null;
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  const scoreColor = (pct: number) =>
+    pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-rose-400';
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="mx-auto max-w-[1280px] space-y-8 pb-16">
+    <div className="mx-auto max-w-[1280px] space-y-7 pb-20">
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          HERO WELCOME BANNER
-      ════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          HERO BANNER
+      ══════════════════════════════════════════════════════════════════════ */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-[30px] border border-white/10 shadow-2xl shadow-primary-900/20"
+        transition={{ duration: 0.45 }}
+        className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0e0e18]"
       >
-        {/* Gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-500 to-accent-500 opacity-90" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_oklch(0.63_0.24_330/0.4)_0%,_transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_oklch(0.57_0.22_265/0.3)_0%,_transparent_60%)]" />
+        {/* Layered backgrounds */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_80%_20%,rgba(124,111,255,0.18)_0%,transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_10%_80%,rgba(45,212,191,0.1)_0%,transparent_55%)]" />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+        {/* Decorative orbs */}
+        <div className="pointer-events-none absolute -top-10 -right-10 w-44 h-44 rounded-full bg-violet-500/5 border border-white/5" />
+        <div className="pointer-events-none absolute -bottom-14 -left-10 w-52 h-52 rounded-full bg-teal-500/5 border border-white/5" />
 
-        {/* Decorative circles */}
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/5 border border-white/10" />
-        <div className="absolute -bottom-12 -left-8 w-48 h-48 rounded-full bg-white/5 border border-white/10" />
-
-        <div className="relative px-6 py-8 sm:px-10 sm:py-10 lg:px-12">
+        <div className="relative px-7 py-8 sm:px-10 sm:py-10">
+          {/* Top row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              {/* Avatar */}
+            <div className="flex items-center gap-5">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 300, delay: 0.1 }}
-                className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center text-white text-2xl font-extrabold shadow-xl flex-shrink-0"
+                transition={{ type: 'spring', stiffness: 280, delay: 0.1 }}
+                className="w-[60px] h-[60px] rounded-2xl bg-gradient-to-br from-violet-500 to-teal-400 flex items-center justify-center text-white text-2xl font-extrabold shadow-xl shadow-violet-500/40 flex-shrink-0"
               >
                 {user?.name.charAt(0).toUpperCase()}
               </motion.div>
 
               <div>
-                <p className="text-white/70 text-sm font-medium">Welcome back,</p>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                  {user?.name.split(' ')[0]} 👋
+                <p className="text-white/50 text-sm font-medium tracking-wide">Welcome back,</p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight">
+                  {user?.name.split(' ')[0]}{' '}
+                  <span className="bg-gradient-to-r from-violet-300 to-teal-300 bg-clip-text text-transparent">
+                    👋
+                  </span>
                 </h1>
-                <p className="text-white/70 text-sm mt-0.5">
+                <p className="text-white/40 text-sm mt-1">
                   {user?.role === 'admin'
                     ? 'Manage your question bank or take a practice quiz.'
-                    : 'Ready to challenge yourself today?'}
+                    : 'Ready to crush today\u2019s challenge?'}
                 </p>
               </div>
             </div>
 
-            {/* Hero quick-stats */}
+            {/* Quick stats */}
             <div className="flex gap-3 flex-wrap">
               {avgScore !== null && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20 min-w-[80px] text-center"
+                  className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
                 >
-                  <p className="text-white font-extrabold text-xl">{avgScore}%</p>
-                  <p className="text-white/70 text-xs mt-0.5">Avg Score</p>
+                  <p className="text-white font-extrabold text-xl leading-none">{avgScore}%</p>
+                  <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Avg Score</p>
                 </motion.div>
               )}
               {bestScore !== null && (
@@ -225,20 +253,20 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20 min-w-[80px] text-center"
+                  className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
                 >
-                  <p className="text-white font-extrabold text-xl">{bestScore}%</p>
-                  <p className="text-white/70 text-xs mt-0.5">Best Score</p>
+                  <p className="text-white font-extrabold text-xl leading-none">{bestScore}%</p>
+                  <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Best</p>
                 </motion.div>
               )}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 border border-white/20 min-w-[80px] text-center"
+                className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
               >
-                <p className="text-white font-extrabold text-xl">{recentResults.length}</p>
-                <p className="text-white/70 text-xs mt-0.5">Quizzes</p>
+                <p className="text-white font-extrabold text-xl leading-none">{recentResults.length}</p>
+                <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Quizzes</p>
               </motion.div>
             </div>
           </div>
@@ -246,25 +274,38 @@ export default function DashboardPage() {
           {/* CTA buttons */}
           <div className="mt-6 flex flex-wrap gap-3">
             <button
-              onClick={() => document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary-600 rounded-xl font-bold text-sm shadow-lg shadow-black/20 hover:bg-primary-50 transition-colors"
+              onClick={() =>
+                document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold text-sm shadow-lg shadow-violet-600/35 hover:-translate-y-0.5 hover:shadow-violet-600/50 transition-all duration-200"
             >
-              <Zap size={15} />
+              <Zap size={14} />
               Start a Quiz
             </button>
+
+            {/* AI Quiz — from your latest version */}
+            <button
+              onClick={() => navigate('/ai-quiz-generator')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold text-sm shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-purple-500/50 hover:scale-[1.02] transition-all duration-200"
+            >
+              <Sparkles size={14} />
+              AI Quiz
+            </button>
+
             <button
               onClick={() => navigate('/leaderboard')}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 text-white rounded-xl font-semibold text-sm border border-white/25 hover:bg-white/25 transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.08] text-white/80 font-semibold text-sm border border-white/[0.12] hover:bg-white/[0.14] hover:text-white transition-all duration-200"
             >
-              <Trophy size={15} />
+              <Trophy size={14} />
               Leaderboard
             </button>
+
             {user?.role === 'admin' && (
               <button
                 onClick={() => navigate('/admin')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 text-white rounded-xl font-semibold text-sm border border-white/25 hover:bg-white/25 transition-colors"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/[0.08] text-white/80 font-semibold text-sm border border-white/[0.12] hover:bg-white/[0.14] hover:text-white transition-all duration-200"
               >
-                <ShieldCheck size={15} />
+                <ShieldCheck size={14} />
                 Admin Panel
               </button>
             )}
@@ -272,26 +313,26 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* ── Admin banner ──────────────────────────────────────────────────────── */}
+      {/* ── Admin banner ──────────────────────────────────────────────────── */}
       {user?.role === 'admin' && (
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-gradient-to-r from-primary-500/10 to-accent-500/10 rounded-2xl border border-primary-200 dark:border-primary-800"
+          className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 rounded-2xl border border-violet-500/20 bg-violet-500/5"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center shadow-md flex-shrink-0">
-            <ShieldCheck size={20} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shadow-md flex-shrink-0">
+            <ShieldCheck size={18} className="text-white" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-[var(--text)]">You're an Admin</p>
-            <p className="text-sm text-[var(--text-muted)]">
+            <p className="font-bold text-[var(--text)] text-sm">You&apos;re an Admin</p>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">
               Your primary role is to manage quiz questions — add, edit, and organise the question bank.
             </p>
           </div>
           <Button
             variant="primary"
             size="sm"
-            leftIcon={<ShieldCheck size={14} />}
+            leftIcon={<ShieldCheck size={13} />}
             onClick={() => navigate('/admin')}
           >
             Manage Questions
@@ -299,50 +340,70 @@ export default function DashboardPage() {
         </motion.div>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          MAIN CONTENT GRID: Wizard + Sidebar
-      ════════════════════════════════════════════════════════════════════════ */}
-      <div id="quiz-wizard" className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(320px,1fr)]">
+      {/* ══════════════════════════════════════════════════════════════════════
+          MAIN GRID: Wizard + Sidebar
+      ══════════════════════════════════════════════════════════════════════ */}
+      <div id="quiz-wizard" className="grid gap-6 lg:grid-cols-[1fr_320px]">
 
-        {/* ── LEFT: wizard ─────────────────────────────────────────────────── */}
-        <div className="lg:col-span-2 space-y-5">
+        {/* ── LEFT: Wizard ─────────────────────────────────────────────────── */}
+        <div className="space-y-5">
 
-          {/* Step progress indicator */}
+          {/* Step progress bar */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="glass rounded-2xl p-3 sm:p-4"
+            className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-3 sm:p-4"
           >
             <div className="flex items-center">
               {STEPS.map((s, idx) => (
                 <div key={s.n} className="flex items-center flex-1 last:flex-none">
                   <button
                     onClick={() => { if (s.n <= step) setStep(s.n); }}
-                    className="flex items-center gap-2 group"
+                    className="flex items-center gap-2.5 group"
                   >
                     <div
-                      className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-xs font-extrabold transition-all duration-300 shadow-sm
+                      className={`
+                        flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center
+                        text-xs font-bold transition-all duration-300 shadow-sm
                         ${step > s.n
                           ? 'bg-emerald-500 text-white shadow-emerald-500/30'
                           : step === s.n
-                            ? 'bg-gradient-to-br from-primary-500 to-accent-500 text-white ring-4 ring-primary-500/20 shadow-primary-500/30'
+                            ? 'bg-gradient-to-br from-violet-500 to-indigo-500 text-white ring-4 ring-violet-500/20 shadow-violet-500/30'
                             : 'bg-black/5 dark:bg-white/5 text-[var(--text-muted)]'
-                        }`}
+                        }
+                      `}
                     >
                       {step > s.n ? <Check size={13} /> : <span>{s.n}</span>}
                     </div>
                     <div className="hidden sm:block">
-                      <p className={`text-xs font-bold transition-colors leading-none ${step === s.n ? 'text-primary-500' : step > s.n ? 'text-emerald-500' : 'text-[var(--text-muted)]'}`}>
+                      <p
+                        className={`text-xs font-bold leading-none transition-colors
+                          ${step === s.n
+                            ? 'text-violet-400'
+                            : step > s.n
+                              ? 'text-emerald-400'
+                              : 'text-[var(--text-muted)]'
+                          }`}
+                      >
                         {s.label}
                       </p>
-                      <p className={`text-[10px] transition-colors ${step === s.n ? 'text-primary-400' : 'text-[var(--text-muted)]'}`}>
+                      <p
+                        className={`text-[10px] mt-0.5 transition-colors
+                          ${step === s.n ? 'text-violet-400/60' : 'text-[var(--text-muted)]'}`}
+                      >
                         {s.desc}
                       </p>
                     </div>
                   </button>
                   {idx < STEPS.length - 1 && (
-                    <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all duration-300 ${step > s.n ? 'bg-gradient-to-r from-emerald-400 to-emerald-300' : 'bg-[var(--border)]'}`} />
+                    <div
+                      className={`flex-1 h-0.5 mx-2.5 rounded-full transition-all duration-300
+                        ${step > s.n
+                          ? 'bg-gradient-to-r from-emerald-400 to-teal-400'
+                          : 'bg-[var(--border)]'
+                        }`}
+                    />
                   )}
                 </div>
               ))}
@@ -356,50 +417,65 @@ export default function DashboardPage() {
             {step === 1 && (
               <motion.div
                 key="step1"
-                initial={{ opacity: 0, x: 30 }}
+                initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
+                exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
                 className="space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md">1</div>
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md shadow-violet-500/30">
+                    1
+                  </div>
                   <div>
-                    <h2 className="text-base font-extrabold text-[var(--text)]">Choose a Category</h2>
-                    <p className="text-xs text-[var(--text-muted)]">Which programming topic do you want to be tested on?</p>
+                    <h2 className="text-base font-extrabold text-[var(--text)] tracking-tight">
+                      Choose a Category
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                      Which programming topic do you want to be tested on?
+                    </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-4">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                   {CATEGORIES.map((cat, i) => (
                     <motion.button
                       key={cat.id}
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.04 }}
+                      transition={{ delay: i * 0.035 }}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`group relative glass rounded-2xl p-4 sm:p-5 text-left transition-all duration-200 flex flex-col min-h-[168px]
+                      className={`
+                        group relative rounded-2xl p-4 sm:p-5 text-left transition-all duration-200
+                        flex flex-col min-h-[158px] border
                         ${selectedCategory === cat.id
-                          ? 'ring-2 ring-primary-500 bg-gradient-to-br from-primary-50/80 to-primary-100/30 dark:from-primary-900/30 dark:to-primary-800/10 shadow-lg shadow-primary-500/15'
-                          : 'hover:ring-1 hover:ring-primary-300 dark:hover:ring-primary-700 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/5'
-                        }`}
+                          ? 'border-violet-500 bg-violet-500/[0.08] shadow-lg shadow-violet-500/15 ring-1 ring-violet-500/50'
+                          : 'border-[var(--border)] bg-[var(--bg-card)] hover:border-violet-400/40 hover:-translate-y-1 hover:shadow-lg hover:shadow-black/10'
+                        }
+                      `}
                     >
                       {selectedCategory === cat.id && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center"
+                          className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center shadow-sm"
                         >
                           <Check size={10} className="text-white" />
                         </motion.div>
                       )}
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-200 overflow-hidden flex-shrink-0`}>
+                      <div
+                        className={`w-11 h-11 rounded-xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center mb-3 shadow-md group-hover:scale-110 transition-transform duration-200 overflow-hidden flex-shrink-0`}
+                      >
                         {cat.image
-                          ? <img src={cat.image} alt={cat.label} className="w-8 h-8 object-contain" />
+                          ? <img src={cat.image} alt={cat.label} className="w-7 h-7 object-contain" />
                           : <span className="text-xl">{cat.icon}</span>}
                       </div>
-                      <p className="font-extrabold text-sm text-[var(--text)]">{cat.label}</p>
-                      <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)] line-clamp-3">{cat.description}</p>
+                      <p className="font-extrabold text-[13px] text-[var(--text)] leading-tight">
+                        {cat.label}
+                      </p>
+                      <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--text-muted)] line-clamp-3">
+                        {cat.description}
+                      </p>
                     </motion.button>
                   ))}
                 </div>
@@ -410,49 +486,61 @@ export default function DashboardPage() {
             {step === 2 && (
               <motion.div
                 key="step2"
-                initial={{ opacity: 0, x: 30 }}
+                initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
+                exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
                 className="space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md">2</div>
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md shadow-violet-500/30">
+                    2
+                  </div>
                   <div>
-                    <h2 className="text-base font-extrabold text-[var(--text)]">Select Difficulty</h2>
-                    <p className="text-xs text-[var(--text-muted)]">
+                    <h2 className="text-base font-extrabold text-[var(--text)] tracking-tight">
+                      Select Difficulty
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
                       {catMeta ? `${catMeta.label} · ` : ''}How challenging should the questions be?
                     </p>
                   </div>
                 </div>
+
                 <div className="grid sm:grid-cols-3 gap-4">
                   {DIFFICULTIES.map((d, i) => (
                     <motion.button
                       key={d.value}
-                      initial={{ opacity: 0, y: 16 }}
+                      initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: i * 0.07 }}
                       onClick={() => setSelectedDifficulty(d.value)}
-                      className={`relative glass rounded-2xl p-5 sm:p-6 text-left transition-all duration-200
+                      className={`
+                        relative rounded-2xl p-5 sm:p-6 text-left border transition-all duration-200
+                        bg-gradient-to-br
                         ${selectedDifficulty === d.value
-                          ? `ring-2 ${d.ring} bg-gradient-to-br ${d.bg} shadow-lg`
-                          : 'hover:ring-1 hover:ring-[var(--border)] hover:-translate-y-1 hover:shadow-lg'
-                        }`}
+                          ? `${d.bg} ${d.ring} ring-1 border-transparent shadow-xl ${d.glow}`
+                          : 'from-transparent to-transparent border-[var(--border)] bg-[var(--bg-card)] hover:-translate-y-1 hover:shadow-lg'
+                        }
+                      `}
                     >
                       {selectedDifficulty === d.value && (
                         <motion.div
                           initial={{ scale: 0 }}
                           animate={{ scale: 1 }}
-                          className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center"
+                          className="absolute top-3 right-3 w-5 h-5 rounded-full bg-violet-500 flex items-center justify-center"
                         >
                           <Check size={10} className="text-white" />
                         </motion.div>
                       )}
-                      <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${d.bg} mb-4 shadow-sm`}>
+                      <div
+                        className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br ${d.bg} mb-4 shadow-sm`}
+                      >
                         <span className="text-3xl">{d.emoji}</span>
                       </div>
                       <p className={`font-extrabold text-base ${d.color}`}>{d.label}</p>
-                      <p className="text-xs text-[var(--text-muted)] mt-1.5 leading-relaxed">{d.description}</p>
+                      <p className="text-xs text-[var(--text-muted)] mt-2 leading-relaxed">
+                        {d.description}
+                      </p>
                     </motion.button>
                   ))}
                 </div>
@@ -463,40 +551,50 @@ export default function DashboardPage() {
             {step === 3 && (
               <motion.div
                 key="step3"
-                initial={{ opacity: 0, x: 30 }}
+                initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
+                exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
                 className="space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md">3</div>
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white text-sm font-extrabold shadow-md shadow-violet-500/30">
+                    3
+                  </div>
                   <div>
-                    <h2 className="text-base font-extrabold text-[var(--text)]">Configure Your Quiz</h2>
-                    <p className="text-xs text-[var(--text-muted)]">Adjust question count, timing, and options.</p>
+                    <h2 className="text-base font-extrabold text-[var(--text)] tracking-tight">
+                      Configure Your Quiz
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                      Adjust question count, timing, and extra options.
+                    </p>
                   </div>
                 </div>
 
-                <Card padding="md" className="space-y-6">
+                <Card padding="md" className="space-y-7">
                   {/* Question count */}
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
-                        <Layers size={14} className="text-primary-500" />
+                        <Layers size={14} className="text-violet-400" />
                         Number of Questions
                       </p>
-                      <span className="text-sm font-extrabold text-primary-500 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-0.5 rounded-lg">{questionCount} Qs</span>
+                      <span className="text-xs font-extrabold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2.5 py-0.5 rounded-lg">
+                        {questionCount} Qs
+                      </span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2.5">
                       {QUESTION_COUNTS.map((n) => (
                         <button
                           key={n}
                           onClick={() => setQuestionCount(n)}
-                          className={`flex-1 py-3 rounded-xl text-sm font-extrabold border-2 transition-all duration-200
+                          className={`
+                            flex-1 py-3 rounded-xl text-sm font-extrabold border-2 transition-all duration-200
                             ${questionCount === n
-                              ? 'border-primary-500 bg-gradient-to-b from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25'
-                              : 'border-[var(--border)] text-[var(--text-muted)] hover:border-primary-400 hover:text-primary-500'
-                            }`}
+                              ? 'border-violet-500 bg-gradient-to-b from-violet-500 to-indigo-600 text-white shadow-lg shadow-violet-500/25'
+                              : 'border-[var(--border)] text-[var(--text-muted)] hover:border-violet-400/50 hover:text-violet-400'
+                            }
+                          `}
                         >
                           {n}
                         </button>
@@ -508,10 +606,12 @@ export default function DashboardPage() {
                   <div>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-bold text-[var(--text)] flex items-center gap-2">
-                        <Clock size={14} className="text-primary-500" />
+                        <Clock size={14} className="text-violet-400" />
                         Time per Question
                       </p>
-                      <span className="text-sm font-extrabold text-primary-500 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-0.5 rounded-lg">{timePerQ}s</span>
+                      <span className="text-xs font-extrabold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2.5 py-0.5 rounded-lg">
+                        {timePerQ}s
+                      </span>
                     </div>
                     <input
                       type="range"
@@ -520,19 +620,34 @@ export default function DashboardPage() {
                       step={5}
                       value={timePerQ}
                       onChange={(e) => setTimePerQ(Number(e.target.value))}
-                      className="w-full h-2.5 rounded-full accent-primary-500 cursor-pointer"
+                      className="w-full h-2 rounded-full accent-violet-500 cursor-pointer"
                     />
-                    <div className="flex justify-between text-xs text-[var(--text-muted)] mt-2">
-                      <span>10s — Fast</span>
+                    <div className="flex justify-between text-[11px] text-[var(--text-muted)] mt-2">
+                      <span>10s — Fast paced</span>
                       <span>120s — Relaxed</span>
                     </div>
                   </div>
 
                   {/* Toggles */}
-                  <div className="grid sm:grid-cols-3 gap-4 pt-4 border-t border-[var(--border)]">
-                    <Toggle checked={shuffleQ}        onChange={setShuffleQ}        label="Shuffle Questions" description="Randomise question order" />
-                    <Toggle checked={shuffleOpts}     onChange={setShuffleOpts}     label="Shuffle Options"   description="Randomise answer choices" />
-                    <Toggle checked={negativeMarking} onChange={setNegativeMarking} label="Negative Marking"  description="-0.25 per wrong answer" />
+                  <div className="grid sm:grid-cols-3 gap-3 pt-5 border-t border-[var(--border)]">
+                    <Toggle
+                      checked={shuffleQ}
+                      onChange={setShuffleQ}
+                      label="Shuffle Questions"
+                      description="Randomise question order"
+                    />
+                    <Toggle
+                      checked={shuffleOpts}
+                      onChange={setShuffleOpts}
+                      label="Shuffle Options"
+                      description="Randomise answer choices"
+                    />
+                    <Toggle
+                      checked={negativeMarking}
+                      onChange={setNegativeMarking}
+                      label="Negative Marking"
+                      description="-0.25 per wrong answer"
+                    />
                   </div>
                 </Card>
               </motion.div>
@@ -542,143 +657,213 @@ export default function DashboardPage() {
             {step === 4 && (
               <motion.div
                 key="step4"
-                initial={{ opacity: 0, x: 30 }}
+                initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -30 }}
+                exit={{ opacity: 0, x: -24 }}
                 transition={{ duration: 0.22 }}
                 className="space-y-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white shadow-md shadow-emerald-500/30">
                     <Check size={15} />
                   </div>
                   <div>
-                    <h2 className="text-base font-extrabold text-[var(--text)]">Review &amp; Start</h2>
-                    <p className="text-xs text-[var(--text-muted)]">Everything looks good? Hit Start Quiz!</p>
+                    <h2 className="text-base font-extrabold text-[var(--text)] tracking-tight">
+                      Review &amp; Start
+                    </h2>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">
+                      Everything looks good? Hit Start Quiz!
+                    </p>
                   </div>
                 </div>
 
                 {/* Summary card */}
-                <Card glass padding="none" className="overflow-hidden">
-                  <div className="h-1.5 bg-gradient-to-r from-primary-500 via-accent-500 to-emerald-500" />
+                <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
+                  <div className="h-1 bg-gradient-to-r from-violet-500 via-teal-400 to-emerald-400" />
+
                   <div className="p-5 grid sm:grid-cols-2 gap-3">
-                    <div className="flex items-center gap-3 p-3.5 bg-black/3 dark:bg-white/3 rounded-2xl">
+                    {/* Category */}
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03]">
                       {catMeta && (
-                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${catMeta.gradient} flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md`}>
+                        <div
+                          className={`w-11 h-11 rounded-xl bg-gradient-to-br ${catMeta.gradient} flex items-center justify-center overflow-hidden flex-shrink-0 shadow-md`}
+                        >
                           {catMeta.image
                             ? <img src={catMeta.image} alt={catMeta.label} className="w-7 h-7 object-contain" />
                             : <span className="text-lg">{catMeta.icon}</span>}
                         </div>
                       )}
                       <div>
-                        <p className="text-xs text-[var(--text-muted)] font-medium">Category</p>
-                        <p className="font-extrabold text-[var(--text)]">{catMeta?.label}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 p-3.5 bg-black/3 dark:bg-white/3 rounded-2xl">
-                      <span className="text-3xl">{DIFFICULTIES.find((d) => d.value === selectedDifficulty)?.emoji}</span>
-                      <div>
-                        <p className="text-xs text-[var(--text-muted)] font-medium">Difficulty</p>
-                        <p className={`font-extrabold ${DIFFICULTIES.find((d) => d.value === selectedDifficulty)?.color}`}>
-                          {selectedDifficulty ? selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1) : '—'}
+                        <p className="text-[11px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                          Category
+                        </p>
+                        <p className="font-extrabold text-sm text-[var(--text)] mt-0.5">
+                          {catMeta?.label}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3.5 bg-black/3 dark:bg-white/3 rounded-2xl">
-                      <div className="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center shadow-sm">
-                        <Layers size={18} className="text-primary-500" />
-                      </div>
+                    {/* Difficulty */}
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03]">
+                      <span className="text-3xl">
+                        {DIFFICULTIES.find((d) => d.value === selectedDifficulty)?.emoji}
+                      </span>
                       <div>
-                        <p className="text-xs text-[var(--text-muted)] font-medium">Questions</p>
-                        <p className="font-extrabold text-[var(--text)]">{questionCount}</p>
+                        <p className="text-[11px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                          Difficulty
+                        </p>
+                        <p
+                          className={`font-extrabold text-sm mt-0.5 ${
+                            DIFFICULTIES.find((d) => d.value === selectedDifficulty)?.color
+                          }`}
+                        >
+                          {selectedDifficulty
+                            ? selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1)
+                            : '—'}
+                        </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3.5 bg-black/3 dark:bg-white/3 rounded-2xl">
-                      <div className="w-11 h-11 rounded-xl bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center shadow-sm">
-                        <Clock size={18} className="text-primary-500" />
+                    {/* Questions */}
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03]">
+                      <div className="w-11 h-11 rounded-xl bg-violet-500/10 flex items-center justify-center shadow-sm">
+                        <Layers size={18} className="text-violet-400" />
                       </div>
                       <div>
-                        <p className="text-xs text-[var(--text-muted)] font-medium">Time / Question</p>
-                        <p className="font-extrabold text-[var(--text)]">{timePerQ}s · {formatTime(timePerQ * questionCount)} total</p>
+                        <p className="text-[11px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                          Questions
+                        </p>
+                        <p className="font-extrabold text-sm text-[var(--text)] mt-0.5">
+                          {questionCount}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Time */}
+                    <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-black/[0.03] dark:bg-white/[0.03]">
+                      <div className="w-11 h-11 rounded-xl bg-teal-500/10 flex items-center justify-center shadow-sm">
+                        <Clock size={18} className="text-teal-400" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                          Time / Question
+                        </p>
+                        <p className="font-extrabold text-sm text-[var(--text)] mt-0.5">
+                          {timePerQ}s{' '}
+                          <span className="font-normal text-[var(--text-muted)]">
+                            · {formatTime(timePerQ * questionCount)} total
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </div>
 
+                  {/* Option badges */}
                   <div className="flex flex-wrap gap-2 px-5 pb-5">
                     {shuffleQ && (
-                      <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 font-semibold">
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold">
                         <Shuffle size={11} /> Shuffle Questions
                       </span>
                     )}
                     {shuffleOpts && (
-                      <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 font-semibold">
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 font-semibold">
                         <Shuffle size={11} /> Shuffle Options
                       </span>
                     )}
                     {negativeMarking && (
-                      <span className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-300 font-semibold">
+                      <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 font-semibold">
                         <Minus size={11} /> Negative Marking (−0.25)
                       </span>
                     )}
                     {!shuffleQ && !shuffleOpts && !negativeMarking && (
-                      <span className="text-xs text-[var(--text-muted)]">Standard settings — no shuffle, no negative marking.</span>
+                      <span className="text-xs text-[var(--text-muted)]">
+                        Standard settings — no shuffle, no negative marking.
+                      </span>
                     )}
                   </div>
-                </Card>
+                </div>
 
                 {/* Start button */}
                 <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                  <Button
-                    fullWidth
-                    size="xl"
+                  <button
                     onClick={handleStart}
-                    loading={isStarting}
-                    leftIcon={<Play size={20} />}
-                    className="shadow-2xl shadow-primary-500/30 !rounded-2xl"
+                    disabled={isStarting}
+                    className="
+                      w-full flex items-center justify-center gap-3 px-6 py-5 rounded-2xl
+                      bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-600
+                      bg-[length:200%_100%] hover:bg-right
+                      text-white font-extrabold text-lg tracking-tight
+                      shadow-2xl shadow-violet-500/35 hover:shadow-violet-500/50
+                      hover:-translate-y-0.5 active:translate-y-0
+                      transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+                    "
                   >
-                    {isStarting ? 'Loading Quiz…' : `Start ${catMeta?.label ?? ''} Quiz`}
-                  </Button>
+                    {isStarting ? (
+                      <>
+                        <div className="w-5 h-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        Loading Quiz&hellip;
+                      </>
+                    ) : (
+                      <>
+                        <Play size={20} />
+                        Start {catMeta?.label ?? ''} Quiz
+                      </>
+                    )}
+                  </button>
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* ── Back / Next navigation ───────────────────────────────────── */}
+          {/* Back / Next navigation */}
           <div className="flex items-center justify-between pt-1">
-            <Button variant="outline" leftIcon={<ChevronLeft size={16} />} onClick={back} disabled={step === 1}>
+            <button
+              onClick={back}
+              disabled={step === 1}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border)] text-[var(--text-muted)] text-sm font-medium hover:text-[var(--text)] hover:bg-[var(--bg-card)] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              <ChevronLeft size={16} />
               Back
-            </Button>
+            </button>
             {step < 4 && (
-              <Button variant="primary" rightIcon={<ChevronRight size={16} />} onClick={advance} disabled={!canAdvance()}>
+              <button
+                onClick={advance}
+                disabled={!canAdvance()}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold shadow-md shadow-violet-500/25 hover:shadow-violet-500/40 hover:-translate-y-0.5 disabled:opacity-35 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all duration-200"
+              >
                 {step === 3 ? 'Review' : 'Next'}
-              </Button>
+                <ChevronRight size={16} />
+              </button>
             )}
           </div>
         </div>
 
-        {/* ── RIGHT: history + tips ─────────────────────────────────────────── */}
-        <div className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+        {/* ── RIGHT: Sidebar ────────────────────────────────────────────────── */}
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
 
           {/* Recent History */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-            <Card padding="none" className="overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
               <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-[var(--border)]">
-                <div className="w-7 h-7 rounded-lg bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
-                  <BookOpen size={14} className="text-primary-500" />
+                <div className="w-7 h-7 rounded-lg bg-violet-500/10 flex items-center justify-center">
+                  <BookOpen size={13} className="text-violet-400" />
                 </div>
                 <h3 className="font-extrabold text-[var(--text)] text-sm">Recent History</h3>
               </div>
 
               {recentResults.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                  <div className="w-14 h-14 rounded-2xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-violet-500/[0.08] flex items-center justify-center mb-3">
                     <span className="text-2xl">📝</span>
                   </div>
                   <p className="font-bold text-[var(--text)] text-sm">No quizzes yet</p>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">Complete your first quiz to see history here.</p>
+                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                    Complete your first quiz to see history here.
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-[var(--border)]">
@@ -689,118 +874,218 @@ export default function DashboardPage() {
                         key={r.id}
                         whileHover={{ x: 3 }}
                         onClick={() => navigate('/result', { state: { result: r } })}
-                        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-black/2 dark:hover:bg-white/2 transition-colors group"
+                        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors group"
                       >
                         <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-teal-400 flex items-center justify-center text-white text-xs font-extrabold shadow-sm">
                             {r.config.category.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-[var(--text)] capitalize">{r.config.category}</p>
-                            <p className="text-xs text-[var(--text-muted)] capitalize">{r.config.difficulty} · {formatTime(r.timeTaken)}</p>
+                            <p className="text-xs font-bold text-[var(--text)] capitalize">
+                              {r.config.category}
+                            </p>
+                            <p className="text-xs text-[var(--text-muted)] capitalize">
+                              {r.config.difficulty} · {formatTime(r.timeTaken)}
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <span className={`text-sm font-extrabold ${grade.color}`}>{r.percentage}%</span>
-                          <ChevronRight size={13} className="text-[var(--text-muted)] group-hover:translate-x-1 transition-transform" />
+                          <span className={`text-sm font-extrabold ${scoreColor(r.percentage)}`}>
+                            {r.percentage}%
+                          </span>
+                          <ChevronRight
+                            size={13}
+                            className="text-[var(--text-muted)] group-hover:translate-x-1 transition-transform"
+                          />
                         </div>
                       </motion.div>
                     );
                   })}
                 </div>
               )}
-            </Card>
+            </div>
           </motion.div>
 
           {/* Quick Stats */}
           {recentResults.length > 0 && (
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <Card padding="none" className="overflow-hidden">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
                 <div className="flex items-center gap-2.5 px-4 py-3.5 border-b border-[var(--border)]">
-                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                    <TrendingUp size={14} className="text-amber-500" />
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                    <TrendingUp size={13} className="text-amber-400" />
                   </div>
                   <h3 className="font-extrabold text-[var(--text)] text-sm">Quick Stats</h3>
                 </div>
-                <div className="grid grid-cols-2 gap-px bg-[var(--border)]">
+                <div className="grid grid-cols-2 divide-x divide-y divide-[var(--border)]">
                   {[
-                    { label: 'Quizzes',    value: recentResults.length,                                                                                    icon: <BookOpen size={14} />, color: 'text-blue-500',    bg: 'bg-blue-50 dark:bg-blue-900/20'       },
-                    { label: 'Avg Score',  value: Math.round(recentResults.reduce((s, r) => s + r.percentage, 0) / recentResults.length) + '%',             icon: <Target size={14} />,   color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/20'    },
-                    { label: 'Best Score', value: Math.max(...recentResults.map((r) => r.percentage)) + '%',                                               icon: <Star size={14} />,     color: 'text-amber-500',   bg: 'bg-amber-50 dark:bg-amber-900/20'         },
-                    { label: 'Total Time', value: formatTime(recentResults.reduce((s, r) => s + r.timeTaken, 0)),                                          icon: <Clock size={14} />,    color: 'text-purple-500',  bg: 'bg-purple-50 dark:bg-purple-900/20'     },
+                    {
+                      label: 'Quizzes',
+                      value: recentResults.length,
+                      icon: <BookOpen size={13} />,
+                      color: 'text-blue-400',
+                      bg: 'bg-blue-500/10',
+                    },
+                    {
+                      label: 'Avg Score',
+                      value:
+                        Math.round(
+                          recentResults.reduce((s, r) => s + r.percentage, 0) /
+                            recentResults.length,
+                        ) + '%',
+                      icon: <Target size={13} />,
+                      color: 'text-emerald-400',
+                      bg: 'bg-emerald-500/10',
+                    },
+                    {
+                      label: 'Best Score',
+                      value: Math.max(...recentResults.map((r) => r.percentage)) + '%',
+                      icon: <Star size={13} />,
+                      color: 'text-amber-400',
+                      bg: 'bg-amber-500/10',
+                    },
+                    {
+                      label: 'Total Time',
+                      value: formatTime(recentResults.reduce((s, r) => s + r.timeTaken, 0)),
+                      icon: <Clock size={13} />,
+                      color: 'text-violet-400',
+                      bg: 'bg-violet-500/10',
+                    },
                   ].map((stat) => (
-                    <div key={stat.label} className="bg-[var(--bg-card)] p-4 text-center">
-                      <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-2 ${stat.color}`}>
+                    <div key={stat.label} className="p-4 text-center">
+                      <div
+                        className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mx-auto mb-2 ${stat.color}`}
+                      >
                         {stat.icon}
                       </div>
                       <p className={`text-lg font-extrabold ${stat.color}`}>{stat.value}</p>
-                      <p className="text-xs text-[var(--text-muted)] font-medium">{stat.label}</p>
+                      <p className="text-[11px] text-[var(--text-muted)] font-medium mt-0.5 uppercase tracking-wider">
+                        {stat.label}
+                      </p>
                     </div>
                   ))}
                 </div>
-              </Card>
+              </div>
             </motion.div>
           )}
 
           {/* Pro Tip */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
-            <Card padding="none" className="overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-amber-400 to-orange-400" />
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
+              <div className="h-[3px] bg-gradient-to-r from-amber-400 via-rose-400 to-violet-400" />
               <div className="p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-lg">💡</span>
-                  <Badge variant="primary" dot>Pro Tip</Badge>
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-base">💡</span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full">
+                    Pro Tip
+                  </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Start with <strong className="text-[var(--text)]">Easy</strong> to build confidence, then progress to <strong className="text-[var(--text)]">Hard</strong> to master each topic. Enable <strong className="text-[var(--text)]">Shuffle</strong> to simulate real exam conditions!
+                  Start with{' '}
+                  <strong className="text-[var(--text)] font-semibold">Easy</strong> to build
+                  confidence, then progress to{' '}
+                  <strong className="text-[var(--text)] font-semibold">Hard</strong> to master each
+                  topic. Enable{' '}
+                  <strong className="text-[var(--text)] font-semibold">Shuffle</strong> to simulate
+                  real exam conditions!
                 </p>
               </div>
-            </Card>
+            </div>
           </motion.div>
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════════════════════
-          ABOUT / FEATURES SECTION
-      ════════════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════════
+          STUDY MODE SECTION
+      ══════════════════════════════════════════════════════════════════════ */}
       <motion.section
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="mt-3"
       >
-        <Card className="overflow-hidden border border-[var(--border)]" padding="none">
-          <div className="border-b border-[var(--border)] bg-gradient-to-r from-primary-500/10 via-accent-500/5 to-transparent px-5 py-4 sm:px-6">
-            <p className="text-xs font-semibold uppercase tracking-wide text-primary-500">Study Mode</p>
-            <h3 className="mt-1 text-lg font-extrabold text-[var(--text)]">Build consistency, then speed</h3>
-            <p className="mt-1 text-sm text-[var(--text-muted)]">A clean routine gives better scores than random practice. Keep this simple sequence each day.</p>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-[var(--border)] bg-gradient-to-r from-violet-500/5 via-transparent to-transparent">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-violet-400">
+              Study Mode
+            </p>
+            <h3 className="mt-1 text-lg font-extrabold text-[var(--text)] tracking-tight">
+              Build consistency, then speed
+            </h3>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">
+              A proven 3-phase daily routine that actually moves the needle.
+            </p>
           </div>
 
-          <div className="grid gap-3 p-4 sm:grid-cols-3 sm:p-5">
+          {/* Phases */}
+          <div className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
             {[
-              { title: 'Warm-up', desc: 'Take 5 Easy questions to identify weak spots quickly.', badge: '5 min', tone: 'from-blue-500/15 to-cyan-500/5' },
-              { title: 'Core Drill', desc: 'Run 10-15 Medium questions with shuffled options.', badge: '15 min', tone: 'from-emerald-500/15 to-teal-500/5' },
-              { title: 'Pressure Set', desc: 'Finish with Hard mode using lower time per question.', badge: '8 min', tone: 'from-amber-500/15 to-orange-500/5' },
+              {
+                phase: 'Phase 1',
+                time: '5 min',
+                title: 'Warm-up',
+                desc: 'Take 5 Easy questions to identify weak spots quickly.',
+                accent: 'text-blue-400',
+                bar: 'from-blue-500 to-cyan-400',
+              },
+              {
+                phase: 'Phase 2',
+                time: '15 min',
+                title: 'Core Drill',
+                desc: 'Run 10\u201315 Medium questions with shuffled options enabled.',
+                accent: 'text-emerald-400',
+                bar: 'from-emerald-500 to-teal-400',
+              },
+              {
+                phase: 'Phase 3',
+                time: '8 min',
+                title: 'Pressure Set',
+                desc: 'Finish with Hard mode, low time per question.',
+                accent: 'text-amber-400',
+                bar: 'from-amber-500 to-orange-400',
+              },
             ].map((item) => (
-              <div key={item.title} className={`rounded-2xl border border-[var(--border)] bg-gradient-to-br ${item.tone} p-4`}>
-                <p className="text-xs font-semibold text-[var(--text-muted)]">{item.badge}</p>
-                <p className="mt-1 text-sm font-extrabold text-[var(--text)]">{item.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--text-muted)]">{item.desc}</p>
+              <div
+                key={item.title}
+                className="relative p-5 sm:p-6 overflow-hidden hover:bg-black/[0.02] dark:hover:bg-white/[0.01] transition-colors"
+              >
+                <div
+                  className={`absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r ${item.bar}`}
+                />
+                <p
+                  className={`text-[11px] font-bold uppercase tracking-widest ${item.accent} mb-2`}
+                >
+                  {item.phase} · {item.time}
+                </p>
+                <p className="font-extrabold text-sm text-[var(--text)] mb-2 tracking-tight">
+                  {item.title}
+                </p>
+                <p className="text-xs leading-relaxed text-[var(--text-muted)]">{item.desc}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col items-start justify-between gap-3 border-t border-[var(--border)] px-5 py-4 sm:flex-row sm:items-center sm:px-6">
+          {/* Footer CTA */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-6 py-4 border-t border-[var(--border)]">
             <p className="text-sm font-semibold text-[var(--text)]">Ready for your next attempt?</p>
-            <Button
-              size="sm"
-              rightIcon={<ArrowRight size={14} />}
-              onClick={() => document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })}
+            <button
+              onClick={() =>
+                document.getElementById('quiz-wizard')?.scrollIntoView({ behavior: 'smooth' })
+              }
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-semibold shadow-md shadow-violet-500/20 hover:-translate-y-0.5 hover:shadow-violet-500/35 transition-all duration-200"
             >
               Continue Quiz Setup
-            </Button>
+              <ArrowRight size={14} />
+            </button>
           </div>
-        </Card>
+        </div>
       </motion.section>
     </div>
   );

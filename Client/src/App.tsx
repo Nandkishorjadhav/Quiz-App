@@ -20,6 +20,10 @@ const LiveQuizRoomPage = lazy(() => import('@/pages/LiveQuizRoomPage'));
 const LiveResultsPage = lazy(() => import('@/pages/LiveResultsPage'));
 const GeneralAdminPanelPage = lazy(() => import('@/pages/GeneralAdminPanelPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+const AIQuizGeneratorPage = lazy(() => import('@/pages/AIQuizGeneratorPage'));
+const AIQuizPage = lazy(() => import('@/pages/AIQuizPage'));
+const AIQuizResultsPage = lazy(() => import('@/pages/AIQuizResultsPage'));
+const AILeaderboardPage = lazy(() => import('@/pages/AILeaderboardPage'));
 
 export default function App() {
   return (
@@ -158,6 +162,48 @@ export default function App() {
             <ProtectedRoute>
               <MainLayout>
                 <LiveResultsPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* AI Quiz Routes */}
+        <Route
+          path="/ai-quiz-generator"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AIQuizGeneratorPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-quiz"
+          element={
+            <ProtectedRoute>
+              <QuizLayout>
+                <AIQuizPage />
+              </QuizLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-quiz-results"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AIQuizResultsPage />
+              </MainLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ai-leaderboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout>
+                <AILeaderboardPage />
               </MainLayout>
             </ProtectedRoute>
           }

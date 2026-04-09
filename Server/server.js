@@ -7,6 +7,7 @@ import { errorHandler } from './middleware/auth.js';
 // Import routes
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
+import quizRoutes from './routes/quiz.js';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/quiz', quizRoutes);
 
 app.use((req, res) => {
   res.status(404).json({
