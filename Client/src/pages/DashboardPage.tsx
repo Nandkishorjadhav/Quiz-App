@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Toggle } from '@/components/ui/Toggle';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
-import { formatTime, getGrade } from '@/utils/helpers';
+import { formatTime } from '@/utils/helpers';
 import toast from 'react-hot-toast';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -867,10 +867,8 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-[var(--border)]">
-                  {recentResults.map((r) => {
-                    const grade = getGrade(r.percentage);
-                    return (
-                      <motion.div
+                  {recentResults.map((r) => (
+                    <motion.div
                         key={r.id}
                         whileHover={{ x: 3 }}
                         onClick={() => navigate('/result', { state: { result: r } })}
@@ -899,8 +897,7 @@ export default function DashboardPage() {
                           />
                         </div>
                       </motion.div>
-                    );
-                  })}
+                    ))}
                 </div>
               )}
             </div>
