@@ -31,6 +31,162 @@ try {
 }
 
 /**
+ * Generate dynamic mock quiz questions based on topic
+ * @param {string} topic - The topic for questions
+ * @param {string} difficulty - Difficulty level (easy/medium/hard)
+ * @param {number} numberOfQuestions - Number of questions to generate
+ * @returns {Array} Array of generated questions
+ */
+function generateDynamicMockQuestions(topic, difficulty, numberOfQuestions) {
+  // Normalize topic
+  const normalizedTopic = topic.toLowerCase().trim();
+
+  // Define difficulty-based question patterns
+  const difficultyPatterns = {
+    easy: {
+      patterns: [
+        `What is ${topic}?`,
+        `${topic} is primarily used for?`,
+        `Which of the following is correct about ${topic}?`,
+        `What does ${topic} stand for?`,
+        `${topic} was created by?`,
+        `What is a basic feature of ${topic}?`,
+        `Which best describes ${topic}?`,
+      ],
+      answerStyles: [
+        'Basic definition',
+        'Common use case',
+        'Historical fact',
+        'Simple concept',
+        'Core feature',
+      ],
+    },
+    medium: {
+      patterns: [
+        `How does ${topic} handle X?`,
+        `What is the difference between X and Y in ${topic}?`,
+        `Which is best practice in ${topic}?`,
+        `How would you use ${topic} for X?`,
+        `What are the advantages of ${topic}?`,
+        `How does ${topic} compare to alternatives?`,
+        `What is a key concept in ${topic}?`,
+      ],
+      answerStyles: [
+        'Conceptual understanding',
+        'Comparative analysis',
+        'Best practice',
+        'Implementation strategy',
+        'Technical feature',
+      ],
+    },
+    hard: {
+      patterns: [
+        `Advanced: What is the mechanism behind ${topic}?`,
+        `How would you optimize ${topic}?`,
+        `Explain the architecture of ${topic}`,
+        `What advanced feature does ${topic} provide?`,
+        `How does ${topic} handle complex scenarios?`,
+        `What are the limitations of ${topic}?`,
+        `Design pattern in ${topic}: Which approach is best?`,
+      ],
+      answerStyles: [
+        'Deep technical knowledge',
+        'Advanced optimization',
+        'Architectural decision',
+        'Complex implementation',
+        'Performance consideration',
+      ],
+    },
+  };
+
+  // Answer options generator
+  function generateOptions(correctAnswer) {
+    const incorrectOptions = [
+      `It's related to system administration`,
+      `It's a database management tool`,
+      `It's primarily for data visualization`,
+      `It's a security protocol`,
+      `It's a networking framework`,
+      `It's used for version control`,
+      `It's a testing framework`,
+      `It's related to machine learning`,
+      `It's a deployment tool`,
+      `It's a caching mechanism`,
+    ];
+
+    // Shuffle and pick random incorrect options
+    const shuffled = incorrectOptions.sort(() => 0.5 - Math.random());
+    const wrong1 = shuffled[0];
+    const wrong2 = shuffled[1];
+    const wrong3 = shuffled[2];
+
+    const options = [correctAnswer, wrong1, wrong2, wrong3];
+    // Shuffle options
+    return options.sort(() => 0.5 - Math.random());
+  }
+
+  function generateCorrectAnswer(pattern, difficulty) {
+    const answers = {
+      easy: [
+        `A powerful tool for modern ${normalizedTopic} development`,
+        `An essential framework in the ${normalizedTopic} ecosystem`,
+        `A key technology that simplifies ${normalizedTopic}`,
+        `The standard approach in ${normalizedTopic}`,
+        `A fundamental concept of ${normalizedTopic}`,
+      ],
+      medium: [
+        `Through its built-in abstraction layer`,
+        `Using its event-driven architecture`,
+        `By implementing a modular design pattern`,
+        `Through middleware and lifecycle hooks`,
+        `Using reactive programming principles`,
+      ],
+      hard: [
+        `By optimizing memory allocation and garbage collection`,
+        `Through lazy evaluation and just-in-time compilation`,
+        `Using sophisticated caching and memoization strategies`,
+        `By implementing asynchronous I/O operations efficiently`,
+        `Through compile-time optimization and tree-shaking`,
+      ],
+    };
+
+    return answers[difficulty][Math.floor(Math.random() * answers[difficulty].length)];
+  }
+
+  const patterns = difficultyPatterns[difficulty]?.patterns || difficultyPatterns.easy.patterns;
+  const questions = [];
+  const usedPatterns = new Set();
+
+  for (let i = 0; i < numberOfQuestions; i++) {
+    // Get a pattern, cycling through if necessary
+    let pattern = patterns[i % patterns.length];
+    let attempts = 0;
+    while (usedPatterns.has(pattern) && attempts < 5) {
+      pattern = patterns[Math.floor(Math.random() * patterns.length)];
+      attempts++;
+    }
+    usedPatterns.add(pattern);
+
+    // Generate question
+    const questionText = pattern.replace(/X/g, `${normalizedTopic} features`).replace(/Y/g, `alternative tools`);
+
+    // Generate answer
+    const correctAnswer = generateCorrectAnswer(pattern, difficulty);
+
+    // Generate options
+    const options = generateOptions(correctAnswer);
+
+    questions.push({
+      question: questionText,
+      options,
+      correctAnswer,
+    });
+  }
+
+  return questions;
+}
+
+/**
  * Generate mock quiz questions for testing
  * @param {string} topic - The topic for questions
  * @param {string} difficulty - Difficulty level (easy/medium/hard)
@@ -38,76 +194,8 @@ try {
  * @returns {Array} Array of mock questions
  */
 function generateMockQuestions(topic, difficulty, numberOfQuestions) {
-  const mockBank = {
-    'React': {
-      easy: [
-        { question: 'What is React?', options: ['A JavaScript library for UI', 'A CSS framework', 'A database tool', 'A backend framework'], correctAnswer: 'A JavaScript library for UI' },
-        { question: 'React was created by?', options: ['Facebook', 'Google', 'Microsoft', 'Netflix'], correctAnswer: 'Facebook' },
-        { question: 'What is JSX?', options: ['A syntax extension for React', 'A styling language', 'A testing tool', 'A package manager'], correctAnswer: 'A syntax extension for React' },
-      ],
-      medium: [
-        { question: 'What is the Virtual DOM in React?', options: ['An in-memory representation of UI', 'A real DOM element', 'A browser API', 'A state management library'], correctAnswer: 'An in-memory representation of UI' },
-        { question: 'What are React Hooks?', options: ['Functions that let you use state in functional components', 'CSS hover effects', 'Database queries', 'API endpoints'], correctAnswer: 'Functions that let you use state in functional components' },
-        { question: 'What does useState do?', options: ['Adds state to functional components', 'Creates a new URL', 'Manages styles', 'Defines props'], correctAnswer: 'Adds state to functional components' },
-      ],
-      hard: [
-        { question: 'What is the difference between state and props?', options: ['State is mutable and local, props are immutable and passed from parent', 'They are identical', 'Props are mutable, state is not', 'State is global, props are local'], correctAnswer: 'State is mutable and local, props are immutable and passed from parent' },
-        { question: 'How does React reconciliation work?', options: ['React compares virtual DOMs and updates only changed elements', 'React updates all elements', 'React removes and recreates everything', 'React uses server-side rendering'], correctAnswer: 'React compares virtual DOMs and updates only changed elements' },
-        { question: 'What is the purpose of useEffect cleanup?', options: ['To clean up subscriptions and prevent memory leaks', 'To delete components', 'To reset styling', 'To clear localStorage'], correctAnswer: 'To clean up subscriptions and prevent memory leaks' },
-      ],
-    },
-    'JavaScript': {
-      easy: [
-        { question: 'What is JavaScript?', options: ['A programming language for web development', 'A coffee brand', 'A database system', 'A styling language'], correctAnswer: 'A programming language for web development' },
-        { question: 'var, let, const are used for?', options: ['Variable declaration', 'Function definition', 'Object creation', 'Import statements'], correctAnswer: 'Variable declaration' },
-        { question: 'What is the difference between == and ===?', options: ['=== checks type, == does not', '== checks type, === does not', 'They are the same', 'Both are for assignment'], correctAnswer: '=== checks type, == does not' },
-      ],
-      medium: [
-        { question: 'What is closure in JavaScript?', options: ['A function that has access to its outer scope even after the outer function returns', 'A loop termination', 'A type of variable', 'A debugging tool'], correctAnswer: 'A function that has access to its outer scope even after the outer function returns' },
-        { question: 'What is hoisting?', options: ['Moving declarations to the top of their scope before execution', 'Lifting objects', 'Creating new variables', 'Importing modules'], correctAnswer: 'Moving declarations to the top of their scope before execution' },
-        { question: 'What does async/await do?', options: ['Handles asynchronous code in a synchronous manner', 'Makes code faster', 'Automatically saves data', 'Prevents bugs'], correctAnswer: 'Handles asynchronous code in a synchronous manner' },
-      ],
-      hard: [
-        { question: 'What is event bubbling?', options: ['Events propagate from child to parent elements', 'Events propagate from parent to child', 'Events are prevented from propagating', 'Events are duplicated'], correctAnswer: 'Events propagate from child to parent elements' },
-        { question: 'What is the event loop?', options: ['Mechanism that allows JavaScript to perform tasks concurrently', 'A UI component', 'A function that loops forever', 'A memory management tool'], correctAnswer: 'Mechanism that allows JavaScript to perform tasks concurrently' },
-        { question: 'What is throttling vs debouncing?', options: ['Throttling limits function calls, debouncing delays them', 'They are identical', 'Debouncing limits, throttling delays', 'Both prevent all function calls'], correctAnswer: 'Throttling limits function calls, debouncing delays them' },
-      ],
-    },
-    'Python': {
-      easy: [
-        { question: 'What is Python?', options: ['A high-level programming language', 'A type of snake', 'A web server', 'A database'], correctAnswer: 'A high-level programming language' },
-        { question: 'How do you create a comment in Python?', options: ['Using #', 'Using //', 'Using /* */', 'Using --'], correctAnswer: 'Using #' },
-        { question: 'What is a list in Python?', options: ['An ordered collection of items', 'A mathematical formula', 'A function definition', 'An import statement'], correctAnswer: 'An ordered collection of items' },
-      ],
-      medium: [
-        { question: 'What is list comprehension?', options: ['A concise way to create lists using a single line', 'A way to explain lists', 'A type of loop', 'A documentation tool'], correctAnswer: 'A concise way to create lists using a single line' },
-        { question: 'What is a lambda function?', options: ['An anonymous function defined in a single line', 'A data type', 'A module', 'A class definition'], correctAnswer: 'An anonymous function defined in a single line' },
-        { question: 'What is the difference between append and extend?', options: ['append adds one item, extend adds multiple items', 'They do the same thing', 'extend adds one item, append adds multiple', 'Only one of them exists'], correctAnswer: 'append adds one item, extend adds multiple items' },
-      ],
-      hard: [
-        { question: 'What is a generator?', options: ['A function that returns an iterator using yield', 'A tool to create programs', 'A type of loop', 'A memory allocation method'], correctAnswer: 'A function that returns an iterator using yield' },
-        { question: 'What is the GIL in Python?', options: ['Global Interpreter Lock that prevents true multithreading', 'A type of variable', 'A networking protocol', 'A memory management system'], correctAnswer: 'Global Interpreter Lock that prevents true multithreading' },
-        { question: 'What is the difference between *args and **kwargs?', options: ['*args is tuple of positional args, **kwargs is dict of keyword args', 'They are identical', '*args is dict, **kwargs is tuple', 'Only one of them is valid'], correctAnswer: '*args is tuple of positional args, **kwargs is dict of keyword args' },
-      ],
-    },
-  };
-
-  // Get mock data for the topic, fallback to generic questions
-  const topicData = mockBank[topic] || mockBank['JavaScript'];
-  const difficultyQuestions = topicData[difficulty] || topicData.easy;
-
-  // Generate requested number of questions by cycling through available questions
-  const questions = [];
-  for (let i = 0; i < numberOfQuestions; i++) {
-    const baseQuestion = difficultyQuestions[i % difficultyQuestions.length];
-    questions.push({
-      question: `${baseQuestion.question} (${i + 1}/${numberOfQuestions})`,
-      options: baseQuestion.options,
-      correctAnswer: baseQuestion.correctAnswer,
-    });
-  }
-
-  return questions;
+  // Use dynamic generator for ANY topic
+  return generateDynamicMockQuestions(topic, difficulty, numberOfQuestions);
 }
 
 /**
