@@ -189,13 +189,13 @@ export default function DashboardPage() {
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45 }}
-        className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#0e0e18]"
+        className="relative overflow-hidden rounded-[28px] border border-white/10 dark:bg-[#0e0e18] bg-white"
       >
         {/* Layered backgrounds */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_80%_20%,rgba(124,111,255,0.18)_0%,transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_10%_80%,rgba(45,212,191,0.1)_0%,transparent_55%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_80%_20%,rgba(124,111,255,0.18)_0%,transparent_60%)] dark:block hidden" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_80%_at_10%_80%,rgba(45,212,191,0.1)_0%,transparent_55%)] dark:block hidden" />
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          className="pointer-events-none absolute inset-0 opacity-[0.03] dark:block hidden"
           style={{
             backgroundImage:
               'linear-gradient(rgba(255,255,255,1) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,1) 1px,transparent 1px)',
@@ -203,8 +203,8 @@ export default function DashboardPage() {
           }}
         />
         {/* Decorative orbs */}
-        <div className="pointer-events-none absolute -top-10 -right-10 w-44 h-44 rounded-full bg-violet-500/5 border border-white/5" />
-        <div className="pointer-events-none absolute -bottom-14 -left-10 w-52 h-52 rounded-full bg-teal-500/5 border border-white/5" />
+        <div className="pointer-events-none absolute -top-10 -right-10 w-44 h-44 rounded-full bg-violet-500/5 border border-white/5 dark:border-white/5 border-purple-200" />
+        <div className="pointer-events-none absolute -bottom-14 -left-10 w-52 h-52 rounded-full bg-teal-500/5 border border-white/5 dark:border-white/5 border-cyan-200" />
 
         <div className="relative px-7 py-8 sm:px-10 sm:py-10">
           {/* Top row */}
@@ -220,14 +220,14 @@ export default function DashboardPage() {
               </motion.div>
 
               <div>
-                <p className="text-white/50 text-sm font-medium tracking-wide">Welcome back,</p>
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight tracking-tight">
+                <p className="dark:text-white/50 text-gray-600 text-sm font-medium tracking-wide">Welcome back,</p>
+                <h1 className="text-2xl sm:text-3xl font-extrabold dark:text-white text-gray-900 leading-tight tracking-tight">
                   {user?.name.split(' ')[0]}{' '}
-                  <span className="bg-gradient-to-r from-violet-300 to-teal-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-violet-300 to-teal-300 dark:from-violet-300 dark:to-teal-300 bg-clip-text text-transparent">
                     👋
                   </span>
                 </h1>
-                <p className="text-white/40 text-sm mt-1">
+                <p className="dark:text-white/40 text-gray-500 text-sm mt-1">
                   {user?.role === 'admin'
                     ? 'Manage your question bank or take a practice quiz.'
                     : 'Ready to crush today\u2019s challenge?'}
@@ -242,10 +242,10 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
+                  className="rounded-2xl border dark:border-white/10 border-gray-300 dark:bg-white/[0.08] bg-white px-5 py-3 text-center min-w-[76px]"
                 >
-                  <p className="text-white font-extrabold text-xl leading-none">{avgScore}%</p>
-                  <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Avg Score</p>
+                  <p className="dark:text-white text-gray-900 font-extrabold text-xl leading-none">{avgScore}%</p>
+                  <p className="dark:text-white/40 text-gray-500 text-[11px] mt-1 uppercase tracking-wider">Avg Score</p>
                 </motion.div>
               )}
               {bestScore !== null && (
@@ -253,20 +253,20 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.25 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
+                  className="rounded-2xl border dark:border-white/10 border-gray-300 dark:bg-white/[0.08] bg-white px-5 py-3 text-center min-w-[76px]"
                 >
-                  <p className="text-white font-extrabold text-xl leading-none">{bestScore}%</p>
-                  <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Best</p>
+                  <p className="dark:text-white text-gray-900 font-extrabold text-xl leading-none">{bestScore}%</p>
+                  <p className="dark:text-white/40 text-gray-500 text-[11px] mt-1 uppercase tracking-wider">Best</p>
                 </motion.div>
               )}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="rounded-2xl border border-white/10 bg-white/[0.08] backdrop-blur-sm px-5 py-3 text-center min-w-[76px]"
+                className="rounded-2xl border dark:border-white/10 border-gray-300 dark:bg-white/[0.08] bg-white px-5 py-3 text-center min-w-[76px]"
               >
-                <p className="text-white font-extrabold text-xl leading-none">{recentResults.length}</p>
-                <p className="text-white/40 text-[11px] mt-1 uppercase tracking-wider">Quizzes</p>
+                <p className="dark:text-white text-gray-900 font-extrabold text-xl leading-none">{recentResults.length}</p>
+                <p className="dark:text-white/40 text-gray-500 text-[11px] mt-1 uppercase tracking-wider">Quizzes</p>
               </motion.div>
             </div>
           </div>
